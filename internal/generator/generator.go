@@ -5,17 +5,26 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go/token"
-
-	"github.com/dave/jennifer/jen"
-	"github.com/iancoleman/strcase" // Added for case conversion
+	"github.com/dave/jennifer/jen" // Added for case conversion
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"guthub.com/vloldik/dbml-gen/internal/utils/genutil"
+	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
+type IStructFromTableGenerator interface {
+	CreateStruct(*parseobj.DBML, *parseobj.Table) (*jen.Code, error)
+}
+
+type DBMLGoGenerator struct {
+	From      *parseobj.DBML
+	StructGen IStructFromTableGenerator
+}
+
 // GenerateModels generates Go model files from DB tables.
-func GenerateModels(parsed *models.DBML, outputDir string, useGorm bool) error {
+func GenerateModels(parsed *models.DBML, outputDir string, tagStyle string) error {
 	for _, table := range parsed.Tables {
-		file := generateModelContent(table, useGorm)
+		file := generateModelContent(table, tagStyle)
 		fileName := fmt.Sprintf("%s.go", strings.ToLower(table.Name))
 		filePath := filepath.Join(outputDir, fileName)
 
@@ -28,56 +37,21 @@ func GenerateModels(parsed *models.DBML, outputDir string, useGorm bool) error {
 }
 
 // generateModelContent generates the content of a Go model file for a single table.
-func generateModelContent(table *models.Table, useGorm bool) *jen.File {
+func generateModelContent(table *models.Table, _ string) *jen.File {
 	file := jen.NewFile("models")
 
-	structFields := make([]jen.Code, 0, len(table.Entries.Columns))
+	structFields := make([]jen.Code, 0, len(table.Fields))
 
-	for _, column := range table.Entries.Columns {
-		goFieldName := toExportedGoName(column.Name)
-		goType := mapDBTypeToGoType(column.Type)
+	for _, column := range table.Fields {
+		goFieldName := strutil.ToExportedGoName(column.Name)
+		goType := genutil.MapDBTypeToGoType(column.Type)
 
 		field := jen.Id(goFieldName).Id(goType.GoString())
 
 		structFields = append(structFields, field)
 	}
 
-	file.Type().Id(toExportedGoName(table.Name)).Struct(structFields...)
+	file.Type().Id(strutil.ToExportedGoName(table.Name)).Struct(structFields...)
 
 	return file
-}
-
-// toExportedGoName converts a snake_case string to CamelCase and ensures it's exported.
-func toExportedGoName(name string) string {
-	camel := strcase.ToCamel(name)
-	// Handle Go reserved words by appending an underscore
-	if token.Lookup(camel).IsKeyword() {
-		camel += "_"
-	}
-	return camel
-}
-
-// toJSONTag converts the column name to a JSON-friendly tag in snake_case.
-func toJSONTag(name string) string {
-	return name
-}
-
-// mapDBTypeToGoType maps database types to Go types.
-func mapDBTypeToGoType(dbType string) jen.Statement {
-	switch strings.ToLower(dbType) {
-	case "int", "integer":
-		return *jen.Int()
-	case "bigint":
-		return *jen.Int64()
-	case "varchar", "text", "char":
-		return *jen.String()
-	case "boolean":
-		return *jen.Bool()
-	case "float", "double":
-		return *jen.Float64()
-	case "date", "datetime", "timestamp":
-		return *jen.Qual("time", "Time")
-	default:
-		return *jen.Any()
-	}
 }

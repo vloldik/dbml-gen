@@ -1,4 +1,4 @@
-package models
+package parseobj
 
 // Enums are currently not supported
 type EnumRef struct {

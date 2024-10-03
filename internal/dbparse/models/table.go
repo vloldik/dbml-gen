@@ -1,47 +1,20 @@
 package models
 
-type DBML struct {
-	Tables []*Table         `(@@)*`
-	Enums  []*Enum          `(@@)*`
-	Refs   []*FullReference `(@@)*`
-}
+import "fmt"
 
 type Table struct {
-	Name     string          `"Table" @Ident`
-	Settings []*TableSetting `("[" @@* ( "," @@ )* ","? "]")?`
-
-	Entries *TableContent `"{"  @@? "}"`
+	Name     string
+	Fields   []*Field
+	Indexes  []*Index
+	Settings strmap
 }
 
-type TableSetting struct {
-	Key   string `@Ident ":"`
-	Value string `(@Ident | ("#"? @Number))`
-}
+func (t Table) GetFieldByName(name string) (*Field, error) {
+	for _, field := range t.Fields {
+		if field.Name == name {
+			return field, nil
+		}
+	}
 
-type TableContent struct {
-	Columns []*Column `@@*`
-	Indexes []*Index  `( "indexes" "{" @@* "}" )?`
-}
-
-type Column struct {
-	Name     string          `@Ident`
-	Type     string          `@Ident`
-	Len      int             `("("@Number")")?`
-	Settings []*FieldSetting `("[" @@* ( "," @@ )* ","? "]")?`
-}
-
-type Index struct {
-	Fields   []string        `@Ident | ( "(" (@Ident | @DBStatement) ( "," (@Ident | @DBStatement) )* ","? ")")`
-	Settings []*IndexSetting `("[" @@* ( "," @@ )* ","? "]")?`
-}
-
-type FullReference struct {
-	Field            *ReferenceField   `"ref" ":" @@`
-	Type             *RelationshipType `@@`
-	ReferenceToField *ReferenceField   `@@`
-}
-
-type ReferenceField struct {
-	Table  string `@Ident`
-	Column string `"." @Ident`
+	return nil, fmt.Errorf("field %s.%s not found", t.Name, name)
 }

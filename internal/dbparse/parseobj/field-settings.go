@@ -1,4 +1,4 @@
-package models
+package parseobj
 
 type FieldSetting struct {
 	PrimaryKey   bool          `  @("pk" | ("primary" "key"))`

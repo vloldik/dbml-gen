@@ -3,8 +3,9 @@ package dbparse
 import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/converts"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/options"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
 type Parser struct{}
@@ -26,14 +27,21 @@ func (p *Parser) Parse(dbml string) (*models.DBML, error) {
 		{Name: "Number", Pattern: `[-+]?([\dA-Fa-f]*\.)?[\dA-Fa-f]+`},
 	})
 
-	parser := participle.MustBuild[models.DBML](
+	parser := participle.MustBuild[parseobj.DBML](
 		participle.Lexer(parserLexer),
 		participle.Elide("whitespace", "EOL", "Comment"),
-		options.Unquote("String"),
 		participle.CaseInsensitive("Ident"),
 	)
 
-	return parser.ParseString("", dbml)
+	parsed, err := parser.ParseString("", dbml)
+
+	if err != nil {
+		return nil, err
+	}
+
+	converter := converts.NewParseObjectToModelConverter()
+
+	return converter.ObjToModel(parsed)
 }
 
 func New() *Parser {
