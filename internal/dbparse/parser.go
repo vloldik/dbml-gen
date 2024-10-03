@@ -1,34 +1,39 @@
 package dbparse
 
 import (
-	"regexp"
-
-	"guthub.com/vloldik/dbml-gen/internal/models"
+	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/options"
 )
 
 type Parser struct{}
 
-func (p *Parser) Parse(dbml string) ([]models.Table, error) {
-	var tables []models.Table
+func (p *Parser) Parse(dbml string) (*models.DBML, error) {
+	// Replace string
+	parserLexer := lexer.MustSimple([]lexer.SimpleRule{
+		{Name: "String", Pattern: `"(\\"|\\[\n\r]+|[^"\n\r])*"|'(\\'|\\[\n\r]+|[^"\n\r])*'`},
+		{Name: "Comment", Pattern: `(\/\/[^\n\r]*)`},
 
-	// Регулярное выражение для извлечения определений таблиц
-	tableRegex := regexp.MustCompile(`(?s)Table\s+(\w+)\s*{(.*?)}`)
-	tableDefs := tableRegex.FindAllStringSubmatch(dbml, -1)
+		{Name: "EOL", Pattern: `[\n\r]+`},
 
-	for _, tableDef := range tableDefs {
-		tableName := tableDef[1]
-		tableContent := tableDef[2]
+		{Name: "whitespace", Pattern: `[ \t]`},
 
-		table := models.Table{
-			Name:    tableName,
-			Columns: p.parseColumns(tableContent),
-			Indexes: p.parseIndexes(tableContent),
-		}
+		{Name: `Ident`, Pattern: `[a-zA-Z_][a-zA-Z0-9_]*`},
+		{Name: "Punct", Pattern: `<>|[-[!@#$%^&*()+_={}\|:;"'<,>.?\/]|]`},
 
-		tables = append(tables, table)
-	}
+		{Name: "DBStatement", Pattern: "\\`(\\\\`|[^\\`])*\\`"},
+		{Name: "Number", Pattern: `[-+]?([\dA-Fa-f]*\.)?[\dA-Fa-f]+`},
+	})
 
-	return tables, nil
+	parser := participle.MustBuild[models.DBML](
+		participle.Lexer(parserLexer),
+		participle.Elide("whitespace", "EOL", "Comment"),
+		options.Unquote("String"),
+		participle.CaseInsensitive("Ident"),
+	)
+
+	return parser.ParseString("", dbml)
 }
 
 func New() *Parser {

@@ -9,12 +9,12 @@ import (
 
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase" // Added for case conversion
-	"guthub.com/vloldik/dbml-gen/internal/models"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
 )
 
 // GenerateModels generates Go model files from DB tables.
-func GenerateModels(tables []models.Table, outputDir string, useGorm bool) error {
-	for _, table := range tables {
+func GenerateModels(parsed *models.DBML, outputDir string, useGorm bool) error {
+	for _, table := range parsed.Tables {
 		file := generateModelContent(table, useGorm)
 		fileName := fmt.Sprintf("%s.go", strings.ToLower(table.Name))
 		filePath := filepath.Join(outputDir, fileName)
@@ -28,39 +28,16 @@ func GenerateModels(tables []models.Table, outputDir string, useGorm bool) error
 }
 
 // generateModelContent generates the content of a Go model file for a single table.
-func generateModelContent(table models.Table, useGorm bool) *jen.File {
+func generateModelContent(table *models.Table, useGorm bool) *jen.File {
 	file := jen.NewFile("models")
 
-	structFields := make([]jen.Code, 0, len(table.Columns))
+	structFields := make([]jen.Code, 0, len(table.Entries.Columns))
 
-	for _, column := range table.Columns {
+	for _, column := range table.Entries.Columns {
 		goFieldName := toExportedGoName(column.Name)
 		goType := mapDBTypeToGoType(column.Type)
 
 		field := jen.Id(goFieldName).Id(goType.GoString())
-
-		tagMap := make(map[string]string)
-
-		if useGorm {
-			gormTags := []string{fmt.Sprintf("column:%s", column.Name)}
-			if column.IsPK {
-				gormTags = append(gormTags, "primaryKey")
-			}
-			if column.IsUnique {
-				gormTags = append(gormTags, "unique")
-			}
-			tagMap["gorm"] = strings.Join(gormTags, ";")
-		}
-
-		// Add JSON tag
-		jsonTag := toJSONTag(column.Name)
-		tagMap["json"] = jsonTag
-
-		field.Tag(tagMap)
-
-		if column.Note != "" {
-			field.Comment(column.Note)
-		}
 
 		structFields = append(structFields, field)
 	}

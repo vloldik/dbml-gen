@@ -1,17 +1,18 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse"
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
 	"guthub.com/vloldik/dbml-gen/internal/generator"
-	"guthub.com/vloldik/dbml-gen/internal/models"
 )
 
 type IParser interface {
-	Parse(dbml string) ([]models.Table, error)
+	Parse(dbml string) (*models.DBML, error)
 }
 
 var generateCmd = &cobra.Command{
@@ -30,13 +31,15 @@ var generateCmd = &cobra.Command{
 
 		var parser IParser = dbparse.New()
 
-		tables, err := parser.Parse(string(dbml))
+		parsed, err := parser.Parse(string(dbml))
+		j, _ := json.Marshal(parsed)
+		println(string(j))
 		if err != nil {
 			fmt.Printf("Ошибка парсинга DBML: %v\n", err)
 			os.Exit(1)
 		}
 
-		err = generator.GenerateModels(tables, outputDir, useGorm)
+		err = generator.GenerateModels(parsed, outputDir, useGorm)
 		if err != nil {
 			fmt.Printf("Ошибка генерации моделей: %v\n", err)
 			os.Exit(1)
