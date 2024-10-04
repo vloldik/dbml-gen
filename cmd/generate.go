@@ -15,13 +15,18 @@ type IParser interface {
 	Parse(dbml string) (*models.DBML, error)
 }
 
+const (
+	DefaultBackend = ""
+	GORMBackend    = "gorm"
+)
+
 var generateCmd = &cobra.Command{
 	Use:   "generate",
 	Short: "Генерирует модели из DBML файла",
 	Run: func(cmd *cobra.Command, args []string) {
 		inputFile, _ := cmd.Flags().GetString("input")
 		outputDir, _ := cmd.Flags().GetString("output")
-		useGorm, _ := cmd.Flags().GetBool("gorm")
+		useGorm, _ := cmd.Flags().GetString("backend")
 
 		dbml, err := os.ReadFile(inputFile)
 		if err != nil {
@@ -39,7 +44,9 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		err = generator.GenerateModels(parsed, outputDir, useGorm)
+		gen := generator.New()
+
+		err = gen.GenerateModels(parsed, outputDir, useGorm)
 		if err != nil {
 			fmt.Printf("Ошибка генерации моделей: %v\n", err)
 			os.Exit(1)
@@ -52,7 +59,7 @@ var generateCmd = &cobra.Command{
 func init() {
 	generateCmd.Flags().StringP("input", "i", "", "Путь к входному DBML файлу")
 	generateCmd.Flags().StringP("output", "o", ".", "Директория для сгенерированных файлов")
-	generateCmd.Flags().BoolP("gorm", "g", false, "Использовать теги GORM")
+	generateCmd.Flags().StringP("backend", "g", "", "Выбор функционала для сгенерированных моделей")
 	generateCmd.MarkFlagRequired("input")
 	rootCmd.AddCommand(generateCmd)
 }

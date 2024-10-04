@@ -5,7 +5,20 @@ import (
 	"strings"
 )
 
+func RemoveQuotes(s, quote string) (string, bool) {
+	if strings.HasPrefix(s, quote) && strings.HasSuffix(s, quote) {
+		s = strings.TrimPrefix(s, quote)
+		s = strings.TrimSuffix(s, quote)
+		return s, true
+	}
+
+	return s, false
+}
+
 func UnquoteString(s string) (string, error) {
+	if len(s) < 2 {
+		return s, nil
+	}
 	quote := s[0]
 	s = s[1 : len(s)-1]
 	out := ""

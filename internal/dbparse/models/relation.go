@@ -12,6 +12,18 @@ const (
 	ManyToMany
 )
 
+func (r RelationType) Name() string {
+	name, ok := map[RelationType]string{
+		OneToOne:   "One to one",
+		ManyToOne:  "Many to one",
+		ManyToMany: "Many to many",
+	}[r]
+	if !ok {
+		return "unknown"
+	}
+	return name
+}
+
 type Relationship struct {
 	RelationType RelationType
 
