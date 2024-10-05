@@ -21,6 +21,8 @@ func (p *Parser) Parse(dbml string) (*models.DBML, error) {
 		{Name: "whitespace", Pattern: `[ \t]`},
 
 		{Name: `Ident`, Pattern: `[a-zA-Z_][a-zA-Z0-9_]*`},
+		{Name: "Color", Pattern: `\#[\dA-Fa-f]+`},
+
 		{Name: "Punct", Pattern: `<>|[-[!@#$%^&*()+_={}\|:;"'<,>.?\/]|]`},
 
 		{Name: "DBStatement", Pattern: "\\`(\\\\`|[^\\`])*\\`"},
@@ -31,6 +33,17 @@ func (p *Parser) Parse(dbml string) (*models.DBML, error) {
 		participle.Lexer(parserLexer),
 		participle.Elide("whitespace", "EOL", "Comment"),
 		participle.CaseInsensitive("Ident"),
+		participle.Union[parseobj.Setting](
+			&parseobj.HeaderColorSetting{},
+			&parseobj.SettingDefaultValue{},
+			&parseobj.SettingIncrement{},
+			&parseobj.SettingNotNull{},
+			&parseobj.SettingNote{},
+			&parseobj.SettingPrimaryKey{},
+			&parseobj.SettingReference{},
+			&parseobj.SettingUnique{},
+			&parseobj.SettingsIndexType{},
+		),
 	)
 
 	parsed, err := parser.ParseString("", dbml)

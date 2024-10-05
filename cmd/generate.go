@@ -37,12 +37,17 @@ var generateCmd = &cobra.Command{
 		var parser IParser = dbparse.New()
 
 		parsed, err := parser.Parse(string(dbml))
-		j, _ := json.Marshal(parsed)
-		println(string(j))
+
 		if err != nil {
 			fmt.Printf("Ошибка парсинга DBML: %v\n", err)
 			os.Exit(1)
 		}
+
+		j, err := json.Marshal(parsed)
+		if err != nil {
+			println(err.Error())
+		}
+		println(string(j))
 
 		gen := generator.New()
 

@@ -1,92 +1,83 @@
 package converts
 
 import (
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/converts/indexer"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/converts/relationer"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 	"guthub.com/vloldik/dbml-gen/internal/utils/maputil"
 )
 
+type tableMap map[string]*models.Table
+
+// Map [relation.Hash() <-> relation] for checks
+type relationMap map[uint32]*models.Relationship
+
 type ParseObjectToModelConverter struct {
-	tables          tableMap
-	indexCreator    *indexer.Indexer
-	relationCreator *relationer.RelationCreator
+	parseDBML      *parseobj.DBML
+	dbml           *models.DBML
+	refsFromFields []*parseobj.FullReference
+	tableMap       tableMap
+	relationMap    relationMap
 }
 
 func NewParseObjectToModelConverter() *ParseObjectToModelConverter {
 	tables := make(tableMap)
 	return &ParseObjectToModelConverter{
-		tables:          tables,
-		indexCreator:    indexer.NewIndexCreator(tables),
-		relationCreator: relationer.NewRelationCreator(tables),
+		tableMap:    tables,
+		relationMap: make(relationMap),
 	}
 }
 
-type tableMap map[string]*models.Table
-
 // This function converts parsed DBML to model and also checks logic
-func (p *ParseObjectToModelConverter) ObjToModel(obj *parseobj.DBML) (*models.DBML, error) {
-	p.fillTablesFromDBML(obj.Tables)
+func (c *ParseObjectToModelConverter) ObjToModel(obj *parseobj.DBML) (*models.DBML, error) {
+	c.parseDBML = obj
 
-	relations, err := p.relationCreator.CreateRelations(obj)
+	if err := c.fillTablesFromDBML(); err != nil {
+		return nil, err
+	}
+
+	err := c.CreateRelations()
 	if err != nil {
 		return nil, err
 	}
 
 	return &models.DBML{
-		Tables:    maputil.Values(p.tables),
-		Relations: relations,
+		Tables:    maputil.Values(c.tableMap),
+		Relations: maputil.Values(c.relationMap),
 	}, nil
 }
 
-func (p *ParseObjectToModelConverter) fillTablesFromDBML(from []*parseobj.Table) {
-	for _, table := range from {
-		p.tables[table.Name] = &models.Table{
-			Name:     table.Name,
-			Settings: tableSettingsToMap(table.Settings),
-			Fields:   createFields(table.Content),
+func (c *ParseObjectToModelConverter) fillTablesFromDBML() error {
+	for _, table := range c.parseDBML.Tables {
+		fields, err := c.createFields(table)
+		if err != nil {
+			return err
 		}
+		tableModel := &models.Table{
+			Name:   table.Name,
+			Fields: fields,
+		}
+		if err := c.applySettings(tableModel, table.Settings); err != nil {
+			return err
+		}
+		c.tableMap[table.Name] = tableModel
 	}
+	return nil
 }
 
-func tableSettingsToMap(settings []*parseobj.TableSetting) map[string]string {
-	settingMap := make(map[string]string)
-	for _, setting := range settings {
-		settingMap[setting.Key] = setting.Value
-	}
-	return settingMap
-}
-
-func createFields(content *parseobj.TableContent) []*models.Field {
+func (c *ParseObjectToModelConverter) createFields(table *parseobj.Table) ([]*models.Field, error) {
 	fieldList := make([]*models.Field, 0)
-	for _, field := range content.Columns {
-
-		fieldList = append(fieldList, applyFieldSettings(&models.Field{
-			Name: field.Name,
-			Type: field.Type,
-			Len:  field.Len,
-		}, field.Settings))
+	for _, field := range table.Content.Columns {
+		fieldModel := &models.Field{
+			TableName: table.Name,
+			Name:      field.Name,
+			Type:      field.Type,
+			Len:       field.Len,
+		}
+		if err := c.applySettings(fieldModel, field.Settings); err != nil {
+			return nil, err
+		}
+		fieldList = append(fieldList, fieldModel)
 	}
 
-	return fieldList
-}
-
-func applyFieldSettings(field *models.Field, settings []*parseobj.FieldSetting) *models.Field {
-	for _, setting := range settings {
-		if setting.DefaultValue != nil {
-			field.DefaultValue = *setting.DefaultValue
-		}
-
-		if setting.Note != nil {
-			field.Note = *setting.Note
-		}
-
-		field.IsIncrement = field.IsIncrement || setting.Increment
-		field.IsNotNull = field.IsNotNull || setting.NotNull
-		field.IsPrimaryKey = field.IsPrimaryKey || setting.PrimaryKey
-		field.IsUnique = field.IsUnique || setting.Unique
-	}
-
-	return field
+	return fieldList, nil
 }

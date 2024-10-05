@@ -7,15 +7,10 @@ type DBML struct {
 }
 
 type Table struct {
-	Name     string          `"Table" @Ident`
-	Settings []*TableSetting `("[" @@* ( "," @@ )* ","? "]")?`
+	Name     string    `"Table" @Ident`
+	Settings *Settings `@@`
 
 	Content *TableContent `"{"  @@? "}"`
-}
-
-type TableSetting struct {
-	Key   string `@Ident ":"`
-	Value string `(@Ident | ("#"? @Number))`
 }
 
 type TableContent struct {
@@ -24,15 +19,15 @@ type TableContent struct {
 }
 
 type Column struct {
-	Name     string          `@Ident`
-	Type     string          `@Ident`
-	Len      int             `("("@Number")")?`
-	Settings []*FieldSetting `("[" @@* ( "," @@ )* ","? "]")?`
+	Name     string    `@Ident`
+	Type     string    `@Ident`
+	Len      int       `("("@Number")")?`
+	Settings *Settings `@@`
 }
 
 type Index struct {
-	Fields   []string        `@Ident | ( "(" (@Ident | @DBStatement) ( "," (@Ident | @DBStatement) )* ","? ")")`
-	Settings []*IndexSetting `("[" @@* ( "," @@ )* ","? "]")?`
+	Fields   []string  `@Ident | ( "(" (@Ident | @DBStatement) ( "," (@Ident | @DBStatement) )* ","? ")")`
+	Settings *Settings `@@`
 }
 
 type FullReference struct {

@@ -6,9 +6,9 @@
     "configurations": [{
         "request": "launch",
         "name": "Launch",
-        "program": "${file}",
+        "program": ".",
         "type": "go",
         "cwd": "${cwd}",
-        "args": ["generate", "-i", "./test/test.dbml", "-o", "./test./output", "--gorm"]
+        "args": ["generate", "-i", "./test/test.dbml", "-o", "./test./output", "--backend", "gorm"]
     }]
 }

@@ -1,13 +1,18 @@
 package models
 
 import (
+	"fmt"
 	"hash/fnv"
+	"strconv"
+
+	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
 type RelationType int8
 
 const (
 	OneToOne RelationType = iota
+	OneToMany
 	ManyToOne
 	ManyToMany
 )
@@ -15,6 +20,7 @@ const (
 func (r RelationType) Name() string {
 	name, ok := map[RelationType]string{
 		OneToOne:   "One to one",
+		OneToMany:  "One to many",
 		ManyToOne:  "Many to one",
 		ManyToMany: "Many to many",
 	}[r]
@@ -22,6 +28,24 @@ func (r RelationType) Name() string {
 		return "unknown"
 	}
 	return name
+}
+
+func (r *RelationType) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote(r.Name())), nil
+}
+
+func RelationTypeFromParsed(parsed *parseobj.RelationshipType) (RelationType, error) {
+	if parsed.ManyToMany {
+		return ManyToMany, nil
+	} else if parsed.ManyToOne {
+		return ManyToOne, nil
+	} else if parsed.OneToMany {
+		return OneToMany, nil
+	} else if parsed.OneToOne {
+		return OneToOne, nil
+	}
+
+	return -1, fmt.Errorf("unknown relations type")
 }
 
 type Relationship struct {

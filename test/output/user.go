@@ -7,5 +7,5 @@ type User struct {
 	Lastname  string    `gorm:"column:lastname"`
 	NameA     time.Time `gorm:"column:name_a"`
 	NameB     int       `gorm:"column:name_b"`
-	Id        int       `gorm:"column:id;primaryKey"` // test
+	Id        int       `gorm:"column:id;primaryKey"`
 }

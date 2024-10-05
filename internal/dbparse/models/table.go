@@ -3,10 +3,10 @@ package models
 import "fmt"
 
 type Table struct {
-	Name     string
-	Fields   []*Field
-	Indexes  []*Index
-	Settings strmap
+	Name    string
+	Fields  []*Field
+	Indexes []*Index
+	Note    string
 }
 
 func (t Table) GetFieldByName(name string) (*Field, error) {
