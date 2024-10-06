@@ -50,8 +50,13 @@ func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Tab
 	sg.structFields = make([]jen.Code, len(table.Fields))
 
 	for i, field := range table.Fields {
+
 		goFieldName := strutil.ToExportedGoName(field.Name)
-		jenField := jen.Id(goFieldName)
+		jenField := jen.Add()
+		if field.Note != "" {
+			jenField.Comment(strutil.TryUnquote(field.Note)).Line()
+		}
+		jenField.Id(goFieldName)
 		genutil.MapDBTypeToGoType(jenField, field.Type)
 
 		settings, err := genutil.CreateBasicGORMTags(field)
@@ -72,13 +77,19 @@ func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Tab
 		if field.Relations == nil {
 			continue
 		}
+
 		for _, relation := range field.Relations {
 			sg.createFieldRelation(field, relation)
 		}
 
 	}
+	structCode := jen.Add()
+	if sg.currentStruct.Source.Note != "" {
+		structCode.Comment(strutil.TryUnquote(sg.currentStruct.Source.Note)).Line()
+	}
+	structCode.Type().Id(sg.currentStruct.StructName).Struct(sg.structFields...)
 
-	sg.currentStruct.File.Add(jen.Type().Id(sg.currentStruct.StructName).Struct(sg.structFields...))
+	sg.currentStruct.File.Add(structCode)
 	return nil
 }
 

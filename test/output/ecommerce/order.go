@@ -1,9 +1,10 @@
 package ecommerce
 
 type Order struct {
-	Id        int    `gorm:"column:id;primaryKey"`
-	UserId    int    `gorm:"column:user_id;not null"`
-	Status    string `gorm:"column:status"`
+	Id     int    `gorm:"column:id;primaryKey"`
+	UserId int    `gorm:"column:user_id;not null"`
+	Status string `gorm:"column:status"`
+	// When order created
 	CreatedAt string `gorm:"column:created_at"`
 }
 

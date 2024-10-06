@@ -2,6 +2,7 @@ package ecommerce
 
 import public "output/public"
 
+// merchants table
 type Merchant struct {
 	Id           int             `gorm:"column:id;primaryKey;index:ix_merchant_id__country_code"`
 	CountryCode  int             `gorm:"column:country_code;index:ix_merchant_id__country_code"`
