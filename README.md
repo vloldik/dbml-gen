@@ -20,7 +20,7 @@ DBML (Database Markup Language) is a simple, readable DSL language designed to d
 To install DBML-Gen, make sure you have Go installed on your system, then run:
 
 ```bash
-go get -u github.com/vloldik/dbml-gen
+go install github.com/vloldik/dbml-gen@v0.0.2-alpha
 ```
 
 ## Usage
