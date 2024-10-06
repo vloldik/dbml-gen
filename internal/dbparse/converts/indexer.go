@@ -8,14 +8,14 @@ import (
 	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
-func (c *ParseObjectToModelConverter) CreateIndexes(table *parseobj.Table) ([]*models.Index, error) {
+func (c *ParseObjectToModelConverter) CreateIndexes(table *parseobj.StructureTable) ([]*models.Index, error) {
 	if table.Content == nil {
 		return []*models.Index{}, nil
 	}
 
 	indexList := make([]*models.Index, 0)
 	for _, index := range table.Content.Indexes {
-		indexModel, err := c.indexFromFields(table.Name, index.Fields)
+		indexModel, err := c.indexFromFields(table.Name.Name, index.Fields)
 		if err != nil {
 			return nil, err
 		}

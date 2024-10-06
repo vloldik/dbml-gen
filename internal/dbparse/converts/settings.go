@@ -38,12 +38,15 @@ func (c *ParseObjectToModelConverter) applyFieldSetting(field *models.Field, unk
 	case *parseobj.SettingUnique:
 		field.IsUnique = setting.Value
 	case *parseobj.SettingReference:
-		c.refsFromFields = append(c.refsFromFields, &parseobj.FullReference{
+		c.referenceList = append(c.referenceList, &parseobj.StructureFullReference{
 			Type:             setting.Value.Type,
 			ReferenceToField: setting.Value.ReferenceToField,
 			Field: &parseobj.ReferenceField{
-				Table:  field.TableName,
-				Column: field.Name,
+				NameParts: []string{
+					field.TableName.Namespace,
+					field.TableName.BaseName,
+					field.Name,
+				},
 			},
 		})
 	default:

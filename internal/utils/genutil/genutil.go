@@ -4,35 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dave/jennifer/jen"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
 	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
-// mapDBTypeToGoType maps database types to Go types.
-func MapDBTypeToGoType(statement *jen.Statement, dbType string) {
-	switch strings.ToLower(dbType) {
-	case "int", "integer":
-		statement.Int()
-	case "bigint":
-		statement.Int64()
-	case "varchar", "text", "char":
-		statement.String()
-	case "boolean":
-		statement.Bool()
-	case "float", "double":
-		statement.Float64()
-	case "date", "datetime", "timestamp":
-		statement.Qual("time", "Time")
-	default:
-		statement.Any()
-	}
-}
-
-func CreateGORMTags(field *models.Field) (map[string]string, error) {
+func CreateBasicGORMTags(field *models.Field) ([]string, error) {
 	// Добавляем теги GORM
-	tags := make([]string, 0)
-	tags = append(tags, fmt.Sprintf("column:%s", field.Name))
+	tags := make([]string, 1)
+	tags[0] = fmt.Sprintf("column:%s", field.Name)
 
 	if field.IsPrimaryKey {
 		tags = append(tags, "primaryKey")
@@ -40,8 +19,20 @@ func CreateGORMTags(field *models.Field) (map[string]string, error) {
 	if field.IsUnique {
 		tags = append(tags, "unique")
 	}
+	if field.Type != "" {
+		gormType, needToSpecify := getGORMTypeForName(field.Type)
+		if needToSpecify {
+			tags = append(tags, fmt.Sprintf("type:%s", gormType))
+		}
+	}
 	if field.IsNotNull {
 		tags = append(tags, "not null")
+	}
+	if field.IsIncrement {
+		tags = append(tags, "autoIncrement")
+	}
+	if field.Len != 0 {
+		tags = append(tags, fmt.Sprintf("size:%d", field.Len))
 	}
 	if field.DefaultValue != "" {
 		defaultVal, removed := strutil.RemoveQuotes(field.DefaultValue, "\"")
@@ -53,9 +44,5 @@ func CreateGORMTags(field *models.Field) (map[string]string, error) {
 		tags = append(tags, fmt.Sprintf("default:%s", defaultVal))
 	}
 
-	if len(tags) == 0 {
-		return map[string]string{}, nil
-	}
-
-	return map[string]string{"gorm": strings.Join(tags, ";")}, nil
+	return tags, nil
 }

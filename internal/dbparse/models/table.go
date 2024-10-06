@@ -3,10 +3,12 @@ package models
 import "fmt"
 
 type Table struct {
-	Name    string
 	Fields  []*Field
 	Indexes []*Index
-	Note    string
+
+	Name  *NamespacedName
+	Alias *string
+	Note  string
 }
 
 func (t Table) GetFieldByName(name string) (*Field, error) {

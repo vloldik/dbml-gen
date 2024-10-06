@@ -2,7 +2,6 @@ package generator
 
 import (
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"github.com/dave/jennifer/jen"
@@ -10,37 +9,42 @@ import (
 )
 
 type IStructFromTableGenerator interface {
-	CreateStruct(*models.DBML, *models.Table) (jen.Code, error)
+	CreateStruct(string, *models.DBML, *models.Table) (jen.Code, error)
 }
 
 type DBMLGoGenerator struct {
 	From      *models.DBML
 	StructGen IStructFromTableGenerator
+	file      *jen.File
+	module    string
+	tagStyle  string
+	outputDIR string
 }
 
-func New() *DBMLGoGenerator {
+func New(outputDIR, module string, tagStyle string) *DBMLGoGenerator {
 	return &DBMLGoGenerator{
-		StructGen: &StructGenerator{},
+		outputDIR: outputDIR,
+		module:    module,
+		tagStyle:  tagStyle,
 	}
 }
 
 // GenerateModels генерирует файлы моделей Go из таблиц БД.
-func (gen *DBMLGoGenerator) GenerateModels(parsed *models.DBML, outputDir string, tagStyle string) error {
+func (gen *DBMLGoGenerator) GenerateModels(parsed *models.DBML) error {
 	for _, table := range parsed.Tables {
-		file := jen.NewFile("models")
+		gen.file = jen.NewFile(table.Name.Namespace)
+		generator := NewStructGenerator(gen)
 
-		code, err := gen.StructGen.CreateStruct(parsed, table)
+		err := generator.CreateStruct(parsed, table)
 		if err != nil {
 			return err
 		}
 
-		file.Add(code)
-		fileName := fmt.Sprintf("%s.go", strings.ToLower(table.Name))
-		filePath := filepath.Join(outputDir, fileName)
+		fileName := fmt.Sprintf("%s.go", strings.ToLower(table.Name.BaseName))
 
-		err = file.Save(filePath)
+		err = saveFile(gen.outputDIR, table.Name.Namespace, fileName, gen.file)
 		if err != nil {
-			return fmt.Errorf("ошибка при записи файла %s: %v", filePath, err)
+			return fmt.Errorf("ошибка при записи файла %v", err)
 		}
 	}
 	return nil

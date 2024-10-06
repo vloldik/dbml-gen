@@ -1,7 +1,7 @@
 package models
 
 type Field struct {
-	TableName string // For easier relation creation
+	TableName *NamespacedName // For easier relation creation
 	Name      string
 	Type      string
 	Len       int
@@ -13,12 +13,12 @@ type Field struct {
 	Note         string
 	DefaultValue string
 
-	Relations []*Relation
+	Relations []*FieldRelation
 	Indexes   []*Index `json:"-"`
 }
 
-type Relation struct {
+type FieldRelation struct {
 	RelationType RelationType
-	SecondTable  string
+	SecondTable  *NamespacedName
 	SecondField  string
 }

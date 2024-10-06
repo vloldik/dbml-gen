@@ -20,7 +20,9 @@ func (p *Parser) Parse(dbml string) (*models.DBML, error) {
 
 		{Name: "whitespace", Pattern: `[ \t]`},
 
+		{Name: `Keyword`, Pattern: `(table|ref|enum|indexes)`},
 		{Name: `Ident`, Pattern: `[a-zA-Z_][a-zA-Z0-9_]*`},
+
 		{Name: "Color", Pattern: `\#[\dA-Fa-f]+`},
 
 		{Name: "Punct", Pattern: `<>|[-[!@#$%^&*()+_={}\|:;"'<,>.?\/]|]`},
@@ -32,17 +34,23 @@ func (p *Parser) Parse(dbml string) (*models.DBML, error) {
 	parser := participle.MustBuild[parseobj.DBML](
 		participle.Lexer(parserLexer),
 		participle.Elide("whitespace", "EOL", "Comment"),
-		participle.CaseInsensitive("Ident"),
+		participle.CaseInsensitive("Ident", "Keyword"),
 		participle.Union[parseobj.Setting](
 			&parseobj.HeaderColorSetting{},
+			&parseobj.SettingUnique{},
 			&parseobj.SettingDefaultValue{},
 			&parseobj.SettingIncrement{},
 			&parseobj.SettingNotNull{},
 			&parseobj.SettingNote{},
 			&parseobj.SettingPrimaryKey{},
 			&parseobj.SettingReference{},
-			&parseobj.SettingUnique{},
+			&parseobj.SettingName{},
 			&parseobj.SettingsIndexType{},
+		),
+		participle.Union[parseobj.DBMLStructure](
+			&parseobj.StructureFullReference{},
+			&parseobj.StructureEnum{},
+			&parseobj.StructureTable{},
 		),
 	)
 

@@ -26,7 +26,7 @@ type SettingUnique struct {
 
 type SettingNotNull struct {
 	*settingImpl
-	Value bool `@"not_null"`
+	Value bool `@("not_null" | ("not" "null"))`
 }
 
 type SettingReference struct {

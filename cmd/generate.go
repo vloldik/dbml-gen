@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -26,7 +25,8 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		inputFile, _ := cmd.Flags().GetString("input")
 		outputDir, _ := cmd.Flags().GetString("output")
-		useGorm, _ := cmd.Flags().GetString("backend")
+		tagStyle, _ := cmd.Flags().GetString("backend")
+		module, _ := cmd.Flags().GetString("module")
 
 		dbml, err := os.ReadFile(inputFile)
 		if err != nil {
@@ -43,15 +43,9 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		j, err := json.Marshal(parsed)
-		if err != nil {
-			println(err.Error())
-		}
-		println(string(j))
+		gen := generator.New(outputDir, module, tagStyle)
 
-		gen := generator.New()
-
-		err = gen.GenerateModels(parsed, outputDir, useGorm)
+		err = gen.GenerateModels(parsed)
 		if err != nil {
 			fmt.Printf("Ошибка генерации моделей: %v\n", err)
 			os.Exit(1)
@@ -63,6 +57,7 @@ var generateCmd = &cobra.Command{
 
 func init() {
 	generateCmd.Flags().StringP("input", "i", "", "Путь к входному DBML файлу")
+	generateCmd.Flags().StringP("module", "m", "", "Название модуля (e.g. gorm.io/gorm)")
 	generateCmd.Flags().StringP("output", "o", ".", "Директория для сгенерированных файлов")
 	generateCmd.Flags().StringP("backend", "g", "", "Выбор функционала для сгенерированных моделей")
 	generateCmd.MarkFlagRequired("input")

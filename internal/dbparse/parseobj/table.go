@@ -1,16 +1,10 @@
 package parseobj
 
-type DBML struct {
-	Tables []*Table         `(@@)*`
-	Enums  []*Enum          `(@@)*`
-	Refs   []*FullReference `(@@)*`
-}
+import "github.com/alecthomas/participle/v2/lexer"
 
-type Table struct {
-	Name     string    `"Table" @Ident`
-	Settings *Settings `@@`
-
-	Content *TableContent `"{"  @@? "}"`
+type NamespacedName struct {
+	Namespace *string `(@Ident ".")?`
+	Name      string  `@Ident`
 }
 
 type TableContent struct {
@@ -20,23 +14,22 @@ type TableContent struct {
 
 type Column struct {
 	Name     string    `@Ident`
-	Type     string    `@Ident`
+	Type     string    `@Ident` // TODO: make []string in future for enum support
 	Len      int       `("("@Number")")?`
 	Settings *Settings `@@`
 }
 
 type Index struct {
-	Fields   []string  `@Ident | ( "(" (@Ident | @DBStatement) ( "," (@Ident | @DBStatement) )* ","? ")")`
+	Tokens   []lexer.Token
+	Fields   []string  `(@Ident | ( "(" (@Ident | @DBStatement) ( "," (@Ident | @DBStatement) )* ")" ))`
 	Settings *Settings `@@`
 }
 
-type FullReference struct {
-	Field            *ReferenceField   `"ref" ":" @@`
-	Type             *RelationshipType `@@`
-	ReferenceToField *ReferenceField   `@@`
+type ReferenceField struct {
+	NameParts []string `@Ident ("." @Ident)+`
 }
 
-type ReferenceField struct {
-	Table  string `@Ident`
-	Column string `"." @Ident`
+type EnumValue struct {
+	Name     string    `@Ident`
+	Settings *Settings `@@`
 }

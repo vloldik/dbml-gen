@@ -15,6 +15,17 @@ func RemoveQuotes(s, quote string) (string, bool) {
 	return s, false
 }
 
+func TryUnquote(s string) string {
+	if !strings.HasPrefix(s, "\"") && !strings.HasPrefix(s, "'") && !strings.HasPrefix(s, "`") {
+		return s
+	}
+	unquoted, err := UnquoteString(s)
+	if err != nil {
+		return s
+	}
+	return unquoted
+}
+
 func UnquoteString(s string) (string, error) {
 	if len(s) < 2 {
 		return s, nil
