@@ -3,9 +3,9 @@ package dbparse
 import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/converts"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"github.com/vloldik/dbml-gen/internal/dbparse/converts"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
 type Parser struct{}

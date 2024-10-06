@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
 )
 
 type IStructFromTableGenerator interface {

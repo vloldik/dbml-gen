@@ -2,8 +2,8 @@ package gormgen
 
 import (
 	"github.com/dave/jennifer/jen"
-	"guthub.com/vloldik/dbml-gen/internal/utils/fileutil"
-	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
+	"github.com/vloldik/dbml-gen/internal/utils/fileutil"
+	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 const createFileMode = 677

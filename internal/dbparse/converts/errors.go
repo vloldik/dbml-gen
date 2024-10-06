@@ -3,7 +3,7 @@ package converts
 import (
 	"fmt"
 
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
 func ErrorUnknownSetting(setting parseobj.Setting, where string) error {

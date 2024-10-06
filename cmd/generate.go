@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/generator"
-	"guthub.com/vloldik/dbml-gen/internal/generator/gormgen"
+	"github.com/vloldik/dbml-gen/internal/dbparse"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/generator"
+	"github.com/vloldik/dbml-gen/internal/generator/gormgen"
 )
 
 type IParser interface {

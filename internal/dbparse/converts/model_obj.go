@@ -3,9 +3,9 @@ package converts
 import (
 	"fmt"
 
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
-	"guthub.com/vloldik/dbml-gen/internal/utils/maputil"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"github.com/vloldik/dbml-gen/internal/utils/maputil"
 )
 
 type tableMap map[string]*models.Table

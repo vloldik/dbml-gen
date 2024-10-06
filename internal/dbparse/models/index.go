@@ -3,7 +3,7 @@ package models
 import (
 	"strings"
 
-	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
+	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 type Index struct {

@@ -3,9 +3,9 @@ package converts
 import (
 	"fmt"
 
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
-	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 func (c *ParseObjectToModelConverter) applySettings(to any, settings *parseobj.Settings) error {

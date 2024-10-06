@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 func CreateBasicGORMTags(field *models.Field) ([]string, error) {

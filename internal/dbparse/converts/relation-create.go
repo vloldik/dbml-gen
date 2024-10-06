@@ -3,8 +3,8 @@ package converts
 import (
 	"fmt"
 
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
 func (c *ParseObjectToModelConverter) CreateRelations() error {

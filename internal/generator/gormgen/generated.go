@@ -4,7 +4,7 @@ import (
 	"hash/fnv"
 
 	"github.com/dave/jennifer/jen"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
 )
 
 type GeneratedStruct struct {

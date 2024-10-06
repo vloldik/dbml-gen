@@ -2,9 +2,9 @@ package gormgen
 
 import (
 	"github.com/dave/jennifer/jen"
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
-	"guthub.com/vloldik/dbml-gen/internal/generator"
-	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
+	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/generator"
+	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 func NewStructGenerator() generator.IStructFromTableGenerator {

@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/dave/jennifer/jen" // Assuming you're using the jennifer library for Go code generation
-	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
+	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 type PredefinedType struct {

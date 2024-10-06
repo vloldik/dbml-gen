@@ -5,7 +5,7 @@ import (
 
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
-	"guthub.com/vloldik/dbml-gen/internal/utils/maputil"
+	"github.com/vloldik/dbml-gen/internal/utils/maputil"
 )
 
 const MigratorPackage = "migrates"

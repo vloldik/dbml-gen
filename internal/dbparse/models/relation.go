@@ -5,7 +5,7 @@ import (
 	"hash/fnv"
 	"strconv"
 
-	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
 type RelationType int8
