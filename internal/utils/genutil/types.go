@@ -54,9 +54,9 @@ var dbTypeMap = map[string]PredefinedType{
 	"NVARCHAR2":        {"string", "NVARCHAR2", false},
 	"DATE":             {"time.Time", "DATE", false},
 	"TIME":             {"time.Duration", "TIME", false},
-	"DATETIME":         {"time.Time", "DATETIME", false},
+	"DATETIME":         {"time.Time", "DATETIME", true},
 	"DATETIME2":        {"time.Time", "DATETIME2", false},
-	"TIMESTAMP":        {"time.Time", "TIMESTAMP", false},
+	"TIMESTAMP":        {"time.Time", "TIMESTAMP", true},
 	"YEAR":             {"int", "YEAR", false},
 	"SMALLDATETIME":    {"time.Time", "SMALLDATETIME", false},
 	"DATETIMEOFFSET":   {"time.Time", "DATETIMEOFFSET", false},
@@ -78,7 +78,7 @@ func getGORMTypeForName(typeName string) (string, bool) {
 	if !predefined.NeedToSpecify {
 		return "", false
 	}
-	return predefined.Name, true
+	return predefined.SQLName, true
 }
 
 func MapDBTypeToGoType(statement *jen.Statement, dbType string) {

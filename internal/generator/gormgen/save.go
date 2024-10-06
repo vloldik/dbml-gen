@@ -1,4 +1,4 @@
-package generator
+package gormgen
 
 import (
 	"github.com/dave/jennifer/jen"
@@ -8,11 +8,11 @@ import (
 
 const createFileMode = 677
 
-func saveFile(path, packageName, filename string, file *jen.File) error {
-	location := strutil.ConcantatePaths(path, packageName)
+func saveFile(basePath, packageName, filename string, file *jen.File) error {
+	location := strutil.ConcantatePaths(basePath, packageName)
 	if err := fileutil.EnsureFolderExists(location, createFileMode); err != nil {
 		return err
 	}
 
-	return file.Save(strutil.ConcantatePaths(location, filename))
+	return file.Save(strutil.ConcantatePaths(location, filename+".go"))
 }

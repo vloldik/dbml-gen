@@ -8,6 +8,7 @@ import (
 	"guthub.com/vloldik/dbml-gen/internal/dbparse"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
 	"guthub.com/vloldik/dbml-gen/internal/generator"
+	"guthub.com/vloldik/dbml-gen/internal/generator/gormgen"
 )
 
 type IParser interface {
@@ -28,6 +29,15 @@ var generateCmd = &cobra.Command{
 		tagStyle, _ := cmd.Flags().GetString("backend")
 		module, _ := cmd.Flags().GetString("module")
 
+		var structGen generator.IStructFromTableGenerator
+
+		switch tagStyle {
+		case "gorm":
+			structGen = gormgen.NewStructGenerator()
+		default:
+			panic(fmt.Errorf("unsupported backend: %s", tagStyle))
+		}
+
 		dbml, err := os.ReadFile(inputFile)
 		if err != nil {
 			fmt.Printf("Ошибка чтения входного файла: %v\n", err)
@@ -43,7 +53,7 @@ var generateCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		gen := generator.New(outputDir, module, tagStyle)
+		gen := generator.New(outputDir, module, tagStyle, structGen)
 
 		err = gen.GenerateModels(parsed)
 		if err != nil {

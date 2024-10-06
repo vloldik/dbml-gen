@@ -5,14 +5,14 @@
 // Creating tables
 // You can define the tables with full schema names
 Table ecommerce.merchants {
-  id int
+  id int [pk] 
   country_code int
   merchant_name varchar(255)
   
   created_at varchar
   admin_id int [ref: > U.id]
   Indexes {
-    (id, country_code) [pk]
+    (id, country_code) // [pk] TODO: unsupported
   }
 }
 
@@ -71,11 +71,11 @@ Enum ecommerce.products_status {
 // Indexes: You can define a single or multi-column index 
 Table ecommerce.products {
   id int [pk]
-  name varchar
+  name varchar(255) // Specify lenght of field, or else gorm will set it as a longtext
   merchant_id int [not null]
   price int
   status int
-  created_at datetime [default: `now()`]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
   
   Indexes {
     (merchant_id, status) [name: 'product_status']

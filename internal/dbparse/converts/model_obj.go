@@ -77,6 +77,11 @@ func (c *ParseObjectToModelConverter) processStructureTable(table *parseobj.Stru
 	if tableModel.Alias != nil {
 		c.tableMap[tableModel.Name.Namespace+"."+*tableModel.Alias] = tableModel
 	}
+	indexes, err := c.CreateIndexes(table)
+	if err != nil {
+		return err
+	}
+	tableModel.Indexes = indexes
 	return nil
 }
 

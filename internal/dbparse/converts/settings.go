@@ -5,6 +5,7 @@ import (
 
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/models"
 	"guthub.com/vloldik/dbml-gen/internal/dbparse/parseobj"
+	"guthub.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
 func (c *ParseObjectToModelConverter) applySettings(to any, settings *parseobj.Settings) error {
@@ -79,7 +80,11 @@ func (c *ParseObjectToModelConverter) applyIndexSettings(index *models.Index, un
 	case *parseobj.SettingsIndexType:
 		index.Type = setting.Value
 	case *parseobj.SettingName:
-		index.Name = setting.Value
+		name, err := strutil.UnquoteString(setting.Value)
+		if err != nil {
+			return err
+		}
+		index.Name = name
 	default:
 		return ErrorUnknownSetting(setting, "models.Index")
 	}

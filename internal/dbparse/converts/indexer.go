@@ -15,7 +15,9 @@ func (c *ParseObjectToModelConverter) CreateIndexes(table *parseobj.StructureTab
 
 	indexList := make([]*models.Index, 0)
 	for _, index := range table.Content.Indexes {
-		indexModel, err := c.indexFromFields(table.Name.Name, index.Fields)
+		indexModel, err := c.indexFromFields(
+			models.NewNamespacedName(table.Name.Namespace, table.Name.Name).FullName(), index.Fields,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -44,13 +46,15 @@ func (c *ParseObjectToModelConverter) indexFromFields(tableName string, fields [
 		if field[0] == '`' {
 			idx.Exprs = append(idx.Exprs, field)
 			continue
-		} else if field[0] == '"' {
+		} else if field[0] == '"' || field[0] == '\'' {
 			inner, err := strutil.UnquoteString(field)
 			if err != nil {
 				return nil, err
 			}
 
 			fieldString = inner
+		} else {
+			fieldString = field
 		}
 
 		fieldModel, err := table.GetFieldByName(fieldString)

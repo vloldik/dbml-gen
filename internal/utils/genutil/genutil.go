@@ -46,3 +46,7 @@ func CreateBasicGORMTags(field *models.Field) ([]string, error) {
 
 	return tags, nil
 }
+
+func GormTagsFromList(tags ...string) map[string]string {
+	return map[string]string{"gorm": strings.Join(tags, ";")}
+}
