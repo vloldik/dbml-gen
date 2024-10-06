@@ -1,4 +1,4 @@
-module guthub.com/vloldik/dbml-gen
+module github.com/vloldik/dbml-gen
 
 go 1.22.7
 
