@@ -46,7 +46,7 @@ func (sg *GORMStructGenerator) Prepare(dbml *models.DBML) error {
 	return nil
 }
 
-func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Table) error {
+func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table) error {
 	sg.structFields = make([]jen.Code, len(table.Fields))
 
 	for i, field := range table.Fields {

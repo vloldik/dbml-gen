@@ -27,6 +27,8 @@ func (sg *GORMStructGenerator) CreateStructsFromTables(tables []*models.Table, p
 			PackageNameToImport: table.Name.Namespace,
 		}
 
+		sg.currentStruct.File.PackageComment("Code generated from DBML. DO NOT EDIT")
+
 		err := sg.createStruct(parsed, table)
 		if err != nil {
 			return err

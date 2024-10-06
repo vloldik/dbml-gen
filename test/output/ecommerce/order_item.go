@@ -1,3 +1,4 @@
+// Code generated from DBML. DO NOT EDIT
 package ecommerce
 
 type OrderItem struct {
