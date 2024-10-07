@@ -2,9 +2,9 @@
 package ecommerce
 
 type ProductTag struct {
-	Id       int        `gorm:"column:id;primaryKey"`
+	ID       int        `gorm:"column:id;primaryKey"`
 	Name     string     `gorm:"column:name"`
-	Products []*Product `gorm:"foreignKey:id;References:id;many2many:product_tag_products"`
+	Products []*Product `gorm:"foreignKey:ID;References:ID;many2many:product_tag_products"`
 }
 
 func (ProductTag) TableName() string {

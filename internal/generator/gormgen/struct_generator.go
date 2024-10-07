@@ -101,8 +101,8 @@ func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table)
 
 func (sg *GORMStructGenerator) createFieldRelation(field *models.Field, relation *models.FieldRelation) {
 	tags := []string{
-		fmt.Sprintf("foreignKey:%s", field.Name),
-		fmt.Sprintf("References:%s", relation.SecondField),
+		fmt.Sprintf("foreignKey:%s", strutil.ToExportedGoName(field.Name)),
+		fmt.Sprintf("References:%s", strutil.ToExportedGoName(relation.SecondField)),
 	}
 	// True if we need import
 	needSpecifyPackageName := false

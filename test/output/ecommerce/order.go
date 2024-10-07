@@ -4,12 +4,12 @@ package ecommerce
 import public "output/public"
 
 type Order struct {
-	Id     int    `gorm:"column:id;primaryKey"`
-	UserId int    `gorm:"column:user_id"`
+	ID     int    `gorm:"column:id;primaryKey"`
+	UserID int    `gorm:"column:user_id"`
 	Status string `gorm:"column:status"`
 	// When order created
 	CreatedAt string       `gorm:"column:created_at"`
-	User      *public.User `gorm:"foreignKey:user_id;References:id"`
+	User      *public.User `gorm:"foreignKey:UserID;References:ID"`
 }
 
 func (Order) TableName() string {

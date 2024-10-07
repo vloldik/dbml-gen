@@ -2,6 +2,7 @@ package strutil
 
 import (
 	"go/token"
+	"strings"
 
 	pluralize "github.com/gertd/go-pluralize"
 	"github.com/iancoleman/strcase"
@@ -13,6 +14,9 @@ func ToExportedGoName(name string) string {
 	// Handle Go reserved words by appending an underscore
 	if token.Lookup(camel).IsKeyword() {
 		camel += "_"
+	}
+	if cutted, ok := strings.CutSuffix(camel, "Id"); ok {
+		camel = cutted + "ID"
 	}
 	return camel
 }
