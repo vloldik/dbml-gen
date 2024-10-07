@@ -48,3 +48,33 @@ func (sg *GORMStructGenerator) RequirementsOrder(generatedStruct *GeneratedStruc
 	generatedStruct.cachedRequirementOrder = order
 	return order
 }
+
+type GeneratedField struct {
+	Name string
+	Code *jen.Statement
+}
+
+type generatedStructFields []*GeneratedField
+
+type IAdder interface {
+	Add(...jen.Code) *jen.Statement
+}
+
+func (gfs generatedStructFields) addAllTo(what IAdder) {
+	for _, gf := range gfs {
+		what.Add(gf.Code)
+	}
+}
+
+func (gfs generatedStructFields) hasName(name string) bool {
+	for _, gf := range gfs {
+		if gf == nil {
+			continue
+		}
+		if gf.Name == name {
+			return true
+		}
+	}
+
+	return false
+}

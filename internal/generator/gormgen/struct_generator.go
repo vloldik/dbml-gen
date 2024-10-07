@@ -2,6 +2,7 @@ package gormgen
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/dave/jennifer/jen"
@@ -16,7 +17,7 @@ type GORMStructGenerator struct {
 	generatedStructs   map[uint32]*GeneratedStruct
 	structRequirements map[uint32][]uint32
 	parent             *generator.DBMLGoGenerator
-	structFields       []jen.Code
+	structFields       generatedStructFields
 }
 
 // ForGenerator implements IStructFromTableGenerator.
@@ -47,7 +48,7 @@ func (sg *GORMStructGenerator) Prepare(dbml *models.DBML) error {
 }
 
 func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table) error {
-	sg.structFields = make([]jen.Code, len(table.Fields))
+	sg.structFields = make(generatedStructFields, len(table.Fields))
 
 	for i, field := range table.Fields {
 
@@ -72,7 +73,10 @@ func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table)
 
 		jenField.Tag(genutil.GormTagsFromList(settings...))
 
-		sg.structFields[i] = jenField
+		sg.structFields[i] = &GeneratedField{
+			Code: jenField,
+			Name: goFieldName,
+		}
 
 		if field.Relations == nil {
 			continue
@@ -87,7 +91,9 @@ func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table)
 	if sg.currentStruct.Source.Note != "" {
 		structCode.Comment(strutil.TryUnquote(sg.currentStruct.Source.Note)).Line()
 	}
-	structCode.Type().Id(sg.currentStruct.StructName).Struct(sg.structFields...)
+	structCode.Type().Id(sg.currentStruct.StructName).StructFunc(func(g *jen.Group) {
+		sg.structFields.addAllTo(g)
+	})
 
 	sg.currentStruct.File.Add(structCode)
 	return nil
@@ -108,9 +114,24 @@ func (sg *GORMStructGenerator) createFieldRelation(field *models.Field, relation
 	}
 
 	relatedTypeName, qual := sg.structNameAndQual(relation.SecondTable)
-	relatedFieldName := relatedTypeName
+
+	relatedFieldName := strutil.ToExportedGoName(relation.SecondField)
+	relatedFieldName, found := strings.CutSuffix(relatedFieldName, "Id")
+	if len(relatedFieldName) < 2 || !found {
+		relatedFieldName = relatedTypeName
+	}
+	if sg.structFields.hasName(relatedFieldName) {
+		relatedFieldName = "Related" + relatedFieldName
+	}
 	if isX_ToMany {
 		relatedFieldName = strutil.ToPlural(relatedFieldName)
+	}
+	i := 0
+	for uniqueName := relatedFieldName; sg.structFields.hasName(uniqueName); uniqueName = relatedFieldName + strconv.Itoa(i) {
+		i++
+	}
+	if i != 0 {
+		relatedFieldName = relatedFieldName + strconv.Itoa(i)
 	}
 
 	createdField := jen.Id(relatedFieldName)
@@ -137,7 +158,10 @@ func (sg *GORMStructGenerator) createFieldRelation(field *models.Field, relation
 	if ok {
 		sg.currentStruct.RequiredStructHashes = requirements
 	}
-	sg.structFields = append(sg.structFields, createdField)
+	sg.structFields = append(sg.structFields, &GeneratedField{
+		Code: createdField,
+		Name: relatedFieldName,
+	})
 }
 
 func (sg *GORMStructGenerator) createIndexTags(index *models.Index, _ *models.Field) (tags []string) {
