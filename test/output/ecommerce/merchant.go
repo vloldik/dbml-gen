@@ -11,7 +11,7 @@ type Merchant struct {
 	CreatedAt    string          `gorm:"column:created_at"`
 	AdminId      int             `gorm:"column:admin_id"`
 	Country      *public.Country `gorm:"foreignKey:country_code;References:code"`
-	User         *public.User    `gorm:"foreignKey:admin_id;References:id"`
+	Admin        *public.User    `gorm:"foreignKey:admin_id;References:id"`
 }
 
 func (Merchant) TableName() string {

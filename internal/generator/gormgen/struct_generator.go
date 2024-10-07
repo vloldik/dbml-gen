@@ -115,7 +115,7 @@ func (sg *GORMStructGenerator) createFieldRelation(field *models.Field, relation
 
 	relatedTypeName, qual := sg.structNameAndQual(relation.SecondTable)
 
-	relatedFieldName := strutil.ToExportedGoName(relation.SecondField)
+	relatedFieldName := strutil.ToExportedGoName(field.Name)
 	relatedFieldName, found := strings.CutSuffix(relatedFieldName, "Id")
 	if len(relatedFieldName) < 2 || !found {
 		relatedFieldName = relatedTypeName
