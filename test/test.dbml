@@ -51,7 +51,7 @@ Ref: ecommerce.order_items.product_id > ecommerce.products.id
 
 Table ecommerce.orders {
   id int [pk] // primary key
-  user_id int [not null, unique]
+  user_id int [ref: > U.id, not null, unique]
   status varchar
   created_at varchar [note: 'When order created'] // add column note
 }
