@@ -2,9 +2,11 @@ package genutil
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/vloldik/dbml-gen/internal/dbparse/models"
+	"github.com/vloldik/dbml-gen/internal/utils/listutil"
 	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
@@ -21,6 +23,13 @@ func CreateBasicGORMTags(field *models.Field) ([]string, error) {
 	}
 	if field.Type != "" {
 		gormType, needToSpecify := getGORMTypeForName(field.Type)
+		if len(field.Len) == 1 {
+			tags = append(tags, fmt.Sprintf("size:%d", field.Len[0]))
+		} else if len(field.Len) > 1 {
+			gormType += fmt.Sprintf("(%s)", strings.Join(listutil.Map(field.Len, func(len int, _ int) string {
+				return strconv.Itoa(len)
+			}), ","))
+		}
 		if needToSpecify {
 			tags = append(tags, fmt.Sprintf("type:%s", gormType))
 		}
@@ -30,9 +39,6 @@ func CreateBasicGORMTags(field *models.Field) ([]string, error) {
 	}
 	if field.IsIncrement {
 		tags = append(tags, "autoIncrement")
-	}
-	if field.Len != 0 {
-		tags = append(tags, fmt.Sprintf("size:%d", field.Len))
 	}
 	if field.DefaultValue != "" {
 		defaultVal, removed := strutil.RemoveQuotes(field.DefaultValue, "\"")

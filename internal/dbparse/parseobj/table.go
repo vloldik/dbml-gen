@@ -15,7 +15,7 @@ type TableContent struct {
 type Column struct {
 	Name     string    `@Ident`
 	Type     string    `@Ident` // TODO: make []string in future for enum support
-	Len      int       `("("@Number")")?`
+	Len      []int     `( "(" @Number ("," @Number )* ")" )?`
 	Settings *Settings `@@`
 }
 

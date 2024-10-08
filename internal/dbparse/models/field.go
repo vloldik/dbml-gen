@@ -4,7 +4,7 @@ type Field struct {
 	TableName *NamespacedName // For easier relation creation
 	Name      string
 	Type      string
-	Len       int
+	Len       []int
 
 	IsPrimaryKey bool
 	IsIncrement  bool
