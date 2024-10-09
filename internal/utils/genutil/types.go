@@ -70,7 +70,7 @@ var dbTypeMap = map[string]PredefinedType{
 	"RAW":              {"[]byte", "RAW", false},
 }
 
-func getGORMTypeForName(typeName string) (string, bool) {
+func GetGORMTypeForName(typeName string) (string, bool) {
 	predefined, ok := dbTypeMap[strings.ToUpper(typeName)]
 	if !ok {
 		return strutil.TryUnquote(typeName), true

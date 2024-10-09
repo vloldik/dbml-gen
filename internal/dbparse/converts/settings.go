@@ -44,9 +44,9 @@ func (c *ParseObjectToModelConverter) applyFieldSetting(field *models.Field, unk
 			ReferenceToField: setting.Value.ReferenceToField,
 			Field: &parseobj.ReferenceField{
 				NameParts: []string{
-					field.TableName.Namespace,
-					field.TableName.BaseName,
-					field.Name,
+					field.Table.TableName.Namespace,
+					field.Table.TableName.BaseName,
+					field.DBName,
 				},
 			},
 		})

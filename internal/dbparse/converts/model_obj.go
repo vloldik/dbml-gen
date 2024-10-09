@@ -55,27 +55,31 @@ func (c *ParseObjectToModelConverter) ObjToModel(obj *parseobj.DBML) (*models.DB
 	}
 
 	return &models.DBML{
-		Tables:    maputil.Values(c.tableMap),
-		Relations: maputil.Values(c.relationMap),
+		Tables: maputil.Values(c.tableMap),
+		Relations: maputil.MapFunc(c.relationMap, func(m map[uint32][]*models.Relationship, _ uint32, v *models.Relationship) (uint32, []*models.Relationship) {
+			return v.FromField.Hash(), append(m[v.FromField.Hash()], v)
+		}),
 	}, nil
 }
 
 func (c *ParseObjectToModelConverter) processStructureTable(table *parseobj.StructureTable) error {
-	fields, err := c.createFields(table)
+	tableModel := &models.Table{
+		TableName: models.NewNamespacedName(table.Name.Namespace, table.Name.Name),
+		Alias:     table.As,
+	}
+
+	fields, err := c.createFields(tableModel, table)
 	if err != nil {
 		return err
 	}
-	tableModel := &models.Table{
-		Name:   models.NewNamespacedName(table.Name.Namespace, table.Name.Name),
-		Fields: fields,
-		Alias:  table.As,
-	}
+	tableModel.Fields = fields
+
 	if err := c.applySettings(tableModel, table.Settings); err != nil {
 		return err
 	}
-	c.tableMap[tableModel.Name.FullName()] = tableModel
+	c.tableMap[tableModel.TableName.FullName()] = tableModel
 	if tableModel.Alias != nil {
-		c.tableMap[tableModel.Name.Namespace+"."+*tableModel.Alias] = tableModel
+		c.tableMap[tableModel.TableName.Namespace+"."+*tableModel.Alias] = tableModel
 	}
 	indexes, err := c.CreateIndexes(table)
 	if err != nil {
@@ -85,14 +89,14 @@ func (c *ParseObjectToModelConverter) processStructureTable(table *parseobj.Stru
 	return nil
 }
 
-func (c *ParseObjectToModelConverter) createFields(table *parseobj.StructureTable) ([]*models.Field, error) {
+func (c *ParseObjectToModelConverter) createFields(tableModel *models.Table, table *parseobj.StructureTable) ([]*models.Field, error) {
 	fieldList := make([]*models.Field, 0)
 	for _, field := range table.Content.Columns {
 		fieldModel := &models.Field{
-			TableName: models.NewNamespacedName(table.Name.Namespace, table.Name.Name),
-			Name:      field.Name,
-			Type:      field.Type,
-			Len:       field.Len,
+			Table:  tableModel,
+			DBName: field.Name,
+			Type:   field.Type,
+			Len:    field.Len,
 		}
 		if err := c.applySettings(fieldModel, field.Settings); err != nil {
 			return nil, err

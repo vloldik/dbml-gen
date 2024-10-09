@@ -9,8 +9,7 @@ import (
 
 func NewStructGenerator() generator.IStructFromTableGenerator {
 	return &GORMStructGenerator{
-		generatedStructs:   make(map[uint32]*GeneratedStruct),
-		structRequirements: make(map[uint32][]uint32),
+		generatedStructs: make(map[uint32]*GeneratedStruct),
 	}
 }
 
@@ -20,11 +19,11 @@ func (sg *GORMStructGenerator) CreateStructsFromTables(tables []*models.Table, p
 
 		sg.currentStruct = &GeneratedStruct{
 			Source:     table,
-			StructName: strutil.ToSingle(strutil.ToExportedGoName(table.Name.BaseName)),
-			File:       jen.NewFile(table.Name.Namespace),
+			StructName: table.DisplayName(),
+			File:       jen.NewFile(table.TableName.Namespace),
 
-			PackagePathToImport: strutil.ConcantatePaths(sg.getBaseImportPath(), table.Name.Namespace),
-			PackageNameToImport: table.Name.Namespace,
+			PackagePathToImport: strutil.ConcantatePaths(sg.getBaseImportPath(), table.TableName.Namespace),
+			PackageNameToImport: table.TableName.Namespace,
 		}
 
 		sg.currentStruct.File.PackageComment("Code generated from DBML. DO NOT EDIT")
@@ -47,6 +46,6 @@ func (sg *GORMStructGenerator) addTableNameFunc() {
 	sg.currentStruct.File.Func().Params(
 		jen.Id(sg.currentStruct.StructName),
 	).Id("TableName").Params().String().Block(
-		jen.Return(jen.Lit(sg.currentStruct.Source.Name.BaseName)),
+		jen.Return(jen.Lit(sg.currentStruct.Source.TableName.BaseName)),
 	)
 }

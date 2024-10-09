@@ -65,11 +65,11 @@ func (r Relationship) Hash() uint32 {
 	// Type does not matter, there can be only one relation type
 	// beetween two fields
 
-	h.Write([]byte(r.FromTable.Name.FullName()))
-	h.Write([]byte(r.FromField.Name))
+	h.Write([]byte(r.FromTable.TableName.FullName()))
+	h.Write([]byte(r.FromField.DBName))
 
-	h.Write([]byte(r.ToTable.Name.FullName()))
-	h.Write([]byte(r.ToField.Name))
+	h.Write([]byte(r.ToTable.TableName.FullName()))
+	h.Write([]byte(r.ToField.DBName))
 
 	return h.Sum32()
 }

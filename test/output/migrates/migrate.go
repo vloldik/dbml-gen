@@ -7,5 +7,5 @@ import (
 )
 
 func MigrateAll(db *gorm.DB) error {
-	return db.AutoMigrate(&public.Country{}, &public.User{}, &ecommerce.Order{}, &ecommerce.Merchant{}, &ecommerce.MerchantPeriod{}, &ecommerce.Product{}, &ecommerce.ProductTag{}, &ecommerce.OrderItem{})
+	return db.AutoMigrate(&ecommerce.Product{}, &ecommerce.ProductTag{}, &ecommerce.Merchant{}, &public.Country{}, &ecommerce.MerchantPeriod{}, &public.User{}, &ecommerce.OrderItem{}, &ecommerce.Order{})
 }

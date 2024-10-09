@@ -41,10 +41,10 @@ func (i *Index) GetName() string {
 	nameBuilder.WriteString("_")
 	for i, field := range i.Fields {
 		if i == 0 {
-			nameBuilder.WriteString(strutil.ToSingle(field.TableName.BaseName))
+			nameBuilder.WriteString(strutil.ToSingle(field.Table.TableName.BaseName))
 		}
 		nameBuilder.WriteString("_")
-		nameBuilder.WriteString(field.Name)
+		nameBuilder.WriteString(field.DBName)
 		nameBuilder.WriteString("_")
 	}
 	i.cachedName = strings.TrimSuffix(nameBuilder.String(), "_")

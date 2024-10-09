@@ -13,11 +13,10 @@ import (
 )
 
 type GORMStructGenerator struct {
-	currentStruct      *GeneratedStruct
-	generatedStructs   map[uint32]*GeneratedStruct
-	structRequirements map[uint32][]uint32
-	parent             *generator.DBMLGoGenerator
-	structFields       generatedStructFields
+	currentStruct    *GeneratedStruct
+	generatedStructs map[uint32]*GeneratedStruct
+	parent           *generator.DBMLGoGenerator
+	structFields     generatedStructFields
 }
 
 // ForGenerator implements IStructFromTableGenerator.
@@ -34,33 +33,22 @@ type IStructFromTableGenerator interface {
 }
 
 func (sg *GORMStructGenerator) Prepare(dbml *models.DBML) error {
-	for _, relation := range dbml.Relations {
-		requiredName, requiredQual := sg.structNameAndQual(relation.ToField.TableName)
-		referencedName, referencedQual := sg.structNameAndQual(relation.FromField.TableName)
-		requiredHash := importHash(requiredQual, requiredName)
-		referencedHash := importHash(referencedQual, referencedName)
-
-		sg.structRequirements[referencedHash] = append(sg.structRequirements[referencedHash], requiredHash)
-
-	}
-
 	return nil
 }
 
-func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table) error {
+func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Table) error {
 	sg.structFields = make(generatedStructFields, len(table.Fields))
 
 	for i, field := range table.Fields {
 
-		goFieldName := strutil.ToExportedGoName(field.Name)
 		jenField := jen.Add()
 		if field.Note != "" {
-			jenField.Comment(strutil.TryUnquote(field.Note)).Line()
+			jenField.Comment(field.NotePrepared()).Line()
 		}
-		jenField.Id(goFieldName)
+		jenField.Id(field.DisplayName())
 		genutil.MapDBTypeToGoType(jenField, field.Type)
 
-		settings, err := genutil.CreateBasicGORMTags(field)
+		settings, err := field.CreateBasicGORMTags()
 		if err != nil {
 			return err
 		}
@@ -75,15 +63,11 @@ func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table)
 
 		sg.structFields[i] = &GeneratedField{
 			Code: jenField,
-			Name: goFieldName,
+			Name: field.DisplayName(),
 		}
 
-		if field.Relations == nil {
-			continue
-		}
-
-		for _, relation := range field.Relations {
-			sg.createFieldRelation(field, relation)
+		for _, relation := range dbml.RelationsByFieldHash(field.Hash()) {
+			sg.createFieldRelation(relation)
 		}
 
 	}
@@ -99,68 +83,41 @@ func (sg *GORMStructGenerator) createStruct(_ *models.DBML, table *models.Table)
 	return nil
 }
 
-func (sg *GORMStructGenerator) createFieldRelation(field *models.Field, relation *models.FieldRelation) {
+func (sg *GORMStructGenerator) createFieldRelation(relation *models.Relationship) {
 	tags := []string{
-		fmt.Sprintf("foreignKey:%s", strutil.ToExportedGoName(field.Name)),
-		fmt.Sprintf("References:%s", strutil.ToExportedGoName(relation.SecondField)),
+		fmt.Sprintf("foreignKey:%s", relation.FromField.DisplayName()),
+		fmt.Sprintf("References:%s", relation.ToField.DisplayName()),
 	}
 	// True if we need import
-	needSpecifyPackageName := false
+	needSpecifyPackageName := relation.FromField.Table.PackageName() != relation.ToField.Table.PackageName()
 	// True if we want to use []list
 	isX_ToMany := relation.RelationType == models.ManyToMany || relation.RelationType == models.OneToMany
+	qual := sg.getStructQualifier(relation.ToTable)
+	createdFieldName := sg.createRelatedFieldName(relation.ToField, relation.ToTable, isX_ToMany)
 
-	if relation.SecondTable.Namespace != field.TableName.Namespace {
-		needSpecifyPackageName = true
-	}
-
-	relatedTypeName, qual := sg.structNameAndQual(relation.SecondTable)
-
-	relatedFieldName := strutil.ToExportedGoName(field.Name)
-	relatedFieldName, found := strings.CutSuffix(relatedFieldName, "Id")
-	if len(relatedFieldName) < 2 || !found {
-		relatedFieldName = relatedTypeName
-	}
-	if sg.structFields.hasName(relatedFieldName) {
-		relatedFieldName = "Related" + relatedFieldName
-	}
-	if isX_ToMany {
-		relatedFieldName = strutil.ToPlural(relatedFieldName)
-	}
-	i := 0
-	for uniqueName := relatedFieldName; sg.structFields.hasName(uniqueName); uniqueName = relatedFieldName + strconv.Itoa(i) {
-		i++
-	}
-	if i != 0 {
-		relatedFieldName = relatedFieldName + strconv.Itoa(i)
-	}
-
-	createdField := jen.Id(relatedFieldName)
+	createdField := jen.Id(createdFieldName)
 	if isX_ToMany {
 		createdField.Index() //List []
 	}
 
 	if relation.RelationType == models.ManyToMany {
 		tags = append(tags,
-			fmt.Sprintf("many2many:%s", strutil.CreateManyToManyName(field.TableName.BaseName, relation.SecondTable.BaseName)),
+			fmt.Sprintf("many2many:%s", strutil.CreateManyToManyName(relation.FromTable.TableName.BaseName, relation.ToTable.TableName.BaseName)),
 		)
 	}
 
 	createdField.Id("*") // Pointer
 	if needSpecifyPackageName {
-		createdField.Qual(qual, relatedTypeName)
+		createdField.Qual(qual, relation.ToTable.DisplayName())
 	} else {
-		createdField.Id(relatedTypeName)
+		createdField.Id(relation.ToTable.DisplayName())
 	}
 
 	createdField.Tag(genutil.GormTagsFromList(tags...))
 
-	requirements, ok := sg.structRequirements[sg.currentStruct.Hash()]
-	if ok {
-		sg.currentStruct.RequiredStructHashes = requirements
-	}
 	sg.structFields = append(sg.structFields, &GeneratedField{
 		Code: createdField,
-		Name: relatedFieldName,
+		Name: createdFieldName,
 	})
 }
 
@@ -197,8 +154,30 @@ func (sg *GORMStructGenerator) getBaseImportPath() string {
 	return strutil.NormalizePath(strutil.ConcantatePaths(sg.parent.Module))
 }
 
-func (sg *GORMStructGenerator) structNameAndQual(tableName *models.NamespacedName) (string, string) {
-	structName := strutil.ToSingle(strutil.ToExportedGoName(tableName.BaseName))
-	qual := strutil.ConcantatePaths(sg.getBaseImportPath(), tableName.Namespace)
-	return structName, qual
+func (sg *GORMStructGenerator) getStructQualifier(table *models.Table) string {
+	qual := strutil.ConcantatePaths(sg.getBaseImportPath(), table.PackageName())
+	return qual
+}
+
+func (sg *GORMStructGenerator) createRelatedFieldName(field *models.Field, table *models.Table, isX_toMany bool) string {
+	relatedFieldName := field.DisplayName()
+	relatedFieldName, found := strings.CutSuffix(relatedFieldName, "Id")
+	if len(relatedFieldName) < 2 || !found {
+		relatedFieldName = table.DisplayName()
+	}
+	if sg.structFields.hasName(relatedFieldName) {
+		relatedFieldName = "Related" + relatedFieldName
+	}
+	if isX_toMany {
+		relatedFieldName = strutil.ToPlural(relatedFieldName)
+	}
+	i := 0
+	for uniqueName := relatedFieldName; sg.structFields.hasName(uniqueName); uniqueName = relatedFieldName + strconv.Itoa(i) {
+		i++
+	}
+	if i != 0 {
+		relatedFieldName = relatedFieldName + strconv.Itoa(i)
+	}
+
+	return relatedFieldName
 }

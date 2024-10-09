@@ -1,8 +1,6 @@
 package gormgen
 
 import (
-	"sort"
-
 	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
 	"github.com/vloldik/dbml-gen/internal/utils/maputil"
@@ -27,12 +25,7 @@ func (sg *GORMStructGenerator) Finalize() error {
 	migrateFile := jen.NewFile(MigratorPackage)
 	migrateFile.Func().Id("MigrateAll").Call(jen.Id("db").Id("*").Qual(gormPackage, "DB")).Error().Block(
 		jen.Return().Id("db").Dot("AutoMigrate").CallFunc(func(g *jen.Group) {
-			values := maputil.Values(sg.generatedStructs)
-			sort.Slice(values, func(i, j int) bool {
-				return sg.RequirementsOrder(values[i]) <
-					sg.RequirementsOrder(values[j])
-			})
-			for _, generated := range values {
+			for _, generated := range maputil.Values(sg.generatedStructs) {
 				g.Id("&").Qual(generated.PackagePathToImport, generated.StructName).Block()
 			}
 		}),

@@ -14,13 +14,6 @@ func (c *ParseObjectToModelConverter) CreateRelations() error {
 		}
 	}
 
-	for _, relation := range c.relationMap {
-		relation.FromField.Relations = append(relation.FromField.Relations, &models.FieldRelation{
-			RelationType: relation.RelationType,
-			SecondTable:  relation.ToTable.Name,
-			SecondField:  relation.ToField.Name,
-		})
-	}
 	return nil
 }
 
@@ -103,8 +96,8 @@ func (c *ParseObjectToModelConverter) addRelation(relation *models.Relationship)
 	if _, ok := c.relationMap[relHash]; ok {
 		return fmt.Errorf(
 			"duplicate relations %s.%s - %s.%s",
-			relation.FromTable.Name, relation.FromField.Name,
-			relation.ToTable.Name, relation.ToField.Name,
+			relation.FromTable.TableName, relation.FromField.DBName,
+			relation.ToTable.TableName, relation.ToField.DBName,
 		)
 	}
 
