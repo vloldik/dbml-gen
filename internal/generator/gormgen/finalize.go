@@ -1,9 +1,7 @@
 package gormgen
 
 import (
-	"github.com/dave/jennifer/jen"
 	"github.com/iancoleman/strcase"
-	"github.com/vloldik/dbml-gen/internal/utils/maputil"
 )
 
 const MigratorPackage = "migrates"
@@ -22,14 +20,15 @@ func (sg *GORMStructGenerator) Finalize() error {
 		}
 	}
 
-	migrateFile := jen.NewFile(MigratorPackage)
-	migrateFile.Func().Id("MigrateAll").Call(jen.Id("db").Id("*").Qual(gormPackage, "DB")).Error().Block(
-		jen.Return().Id("db").Dot("AutoMigrate").CallFunc(func(g *jen.Group) {
-			for _, generated := range maputil.Values(sg.generatedStructs) {
-				g.Id("&").Qual(generated.PackagePathToImport, generated.StructName).Block()
-			}
-		}),
-	)
+	if err := sg.createMigrator(); err != nil {
+		return err
+	}
 
-	return saveFile(sg.parent.OutputDIR, MigratorPackage, "migrate", migrateFile)
+	for _, generatedStruct := range sg.generatedStructs {
+		if err := sg.createRepositrory(generatedStruct); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

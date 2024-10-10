@@ -47,3 +47,10 @@ func CreateManyToManyName(tableNameA, tableNameB string) string {
 	tableNameB = ToPlural(tableNameB)
 	return strcase.ToSnake(tableNameA) + "_" + strcase.ToSnake(tableNameB)
 }
+
+func ToNotExported(word string) string {
+	var firstChar string = string(word[0])
+	firstChar = string(strings.ToLower(firstChar)[0])
+	word = firstChar + word[1:]
+	return strings.Replace(word, "iD", "id", 1)
+}
