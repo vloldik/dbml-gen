@@ -14,9 +14,18 @@ const (
 	codeGeneratedComment = "Code generated from DBML. DO NOT EDIT"
 )
 
-func (sg *GORMStructGenerator) createRepositrory(generatedStruct *GeneratedStruct) error {
-	repoName := generatedStruct.StructName + "Repository"
-	qual := sg.getStructQualifier(generatedStruct.Source)
+func (sg *GORMStructGenerator) CreateRepositories(dbml *models.DBML) error {
+	for _, table := range dbml.Tables {
+		if err := sg.createRepositrory(table); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (sg *GORMStructGenerator) createRepositrory(generatedStruct *models.Table) error {
+	repoName := generatedStruct.DisplayName() + "Repository"
+	qual := sg.getStructQualifier(generatedStruct)
 
 	file := jen.NewFile("repos")
 	file.PackageComment(codeGeneratedComment)
@@ -36,10 +45,10 @@ func (sg *GORMStructGenerator) createRepositrory(generatedStruct *GeneratedStruc
 		file:          file,
 		repoClassName: repoName,
 		packageName:   qual,
-		className:     generatedStruct.StructName,
+		className:     generatedStruct.DisplayName(),
 	}
 
-	for _, field := range generatedStruct.Source.Fields {
+	for _, field := range generatedStruct.Fields {
 		if !field.IsPrimaryKey {
 			continue
 		}
@@ -55,7 +64,7 @@ func (sg *GORMStructGenerator) createRepositrory(generatedStruct *GeneratedStruc
 
 	funcCreator.GenFuncGetDB()
 
-	return saveFile(sg.parent.OutputDIR, "repos", strcase.ToSnake(generatedStruct.StructName)+"_repo.go", file)
+	return saveFile(sg.parent.OutputDIR, "repos", strcase.ToSnake(generatedStruct.DisplayName())+"_repo.go", file)
 }
 
 func writeClassFunc(writeTo *jen.File, classname, funcName string) *jen.Statement {

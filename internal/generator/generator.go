@@ -7,6 +7,7 @@ import (
 type IStructFromTableGenerator interface {
 	ForGenerator(*DBMLGoGenerator) IStructFromTableGenerator
 	CreateStructsFromTables([]*models.Table, *models.DBML) error
+	CreateRepositories(*models.DBML) error
 	Prepare(*models.DBML) error
 	Finalize() error
 }
@@ -37,4 +38,8 @@ func (gen *DBMLGoGenerator) GenerateModels(parsed *models.DBML) error {
 		return err
 	}
 	return gen.StructGen.Finalize()
+}
+
+func (gen *DBMLGoGenerator) CreateRepositories(parsed *models.DBML) error {
+	return gen.StructGen.CreateRepositories(parsed)
 }

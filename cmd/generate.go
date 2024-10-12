@@ -28,6 +28,7 @@ var generateCmd = &cobra.Command{
 		outputDir, _ := cmd.Flags().GetString("output")
 		tagStyle, _ := cmd.Flags().GetString("backend")
 		module, _ := cmd.Flags().GetString("module")
+		generateRepos, _ := cmd.Flags().GetBool("repos")
 
 		var structGen generator.IStructFromTableGenerator
 
@@ -55,7 +56,12 @@ var generateCmd = &cobra.Command{
 
 		gen := generator.New(outputDir, module, tagStyle, structGen)
 
-		err = gen.GenerateModels(parsed)
+		if generateRepos {
+			err = gen.CreateRepositories(parsed)
+		} else {
+			err = gen.GenerateModels(parsed)
+		}
+
 		if err != nil {
 			fmt.Printf("Ошибка генерации моделей: %v\n", err)
 			os.Exit(1)
@@ -70,6 +76,7 @@ func init() {
 	generateCmd.Flags().StringP("module", "m", "", "Название модуля (e.g. gorm.io/gorm)")
 	generateCmd.Flags().StringP("output", "o", ".", "Директория для сгенерированных файлов")
 	generateCmd.Flags().StringP("backend", "g", "", "Выбор функционала для сгенерированных моделей")
+	generateCmd.Flags().BoolP("repos", "r", false, "Generate repositories for file")
 	generateCmd.MarkFlagRequired("input")
 	rootCmd.AddCommand(generateCmd)
 }

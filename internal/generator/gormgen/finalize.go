@@ -24,11 +24,5 @@ func (sg *GORMStructGenerator) Finalize() error {
 		return err
 	}
 
-	for _, generatedStruct := range sg.generatedStructs {
-		if err := sg.createRepositrory(generatedStruct); err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
