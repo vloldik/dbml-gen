@@ -46,7 +46,7 @@ func (r *UserRepository) List(ctx context.Context, limit int, offset int) ([]*pu
 	return list, nil
 }
 func (r *UserRepository) Update(ctx context.Context, model public.User) (*public.User, error) {
-	result := r.db.WithContext(ctx).Save(&model)
+	result := r.db.WithContext(ctx).Updates(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -59,4 +59,7 @@ func (r *UserRepository) TotalCount(ctx context.Context) (int64, error) {
 		return -1, result.Error
 	}
 	return count, nil
+}
+func (r *UserRepository) GetDB() *gorm.DB {
+	return r.db
 }

@@ -46,7 +46,7 @@ func (r *ProductRepository) List(ctx context.Context, limit int, offset int) ([]
 	return list, nil
 }
 func (r *ProductRepository) Update(ctx context.Context, model ecommerce.Product) (*ecommerce.Product, error) {
-	result := r.db.WithContext(ctx).Save(&model)
+	result := r.db.WithContext(ctx).Updates(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -59,4 +59,7 @@ func (r *ProductRepository) TotalCount(ctx context.Context) (int64, error) {
 		return -1, result.Error
 	}
 	return count, nil
+}
+func (r *ProductRepository) GetDB() *gorm.DB {
+	return r.db
 }

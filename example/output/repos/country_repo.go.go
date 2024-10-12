@@ -46,7 +46,7 @@ func (r *CountryRepository) List(ctx context.Context, limit int, offset int) ([]
 	return list, nil
 }
 func (r *CountryRepository) Update(ctx context.Context, model public.Country) (*public.Country, error) {
-	result := r.db.WithContext(ctx).Save(&model)
+	result := r.db.WithContext(ctx).Updates(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -59,4 +59,7 @@ func (r *CountryRepository) TotalCount(ctx context.Context) (int64, error) {
 		return -1, result.Error
 	}
 	return count, nil
+}
+func (r *CountryRepository) GetDB() *gorm.DB {
+	return r.db
 }

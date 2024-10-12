@@ -53,6 +53,8 @@ func (sg *GORMStructGenerator) createRepositrory(generatedStruct *GeneratedStruc
 	funcCreator.GenFuncUpdate()
 	funcCreator.GenFuncTotalCount()
 
+	funcCreator.GenFuncGetDB()
+
 	return saveFile(sg.parent.OutputDIR, "repos", strcase.ToSnake(generatedStruct.StructName)+"_repo.go", file)
 }
 
@@ -65,6 +67,13 @@ type funcCreator struct {
 	repoClassName string
 	packageName   string
 	className     string
+}
+
+func (fc *funcCreator) GenFuncGetDB() jen.Code {
+	statement := writeClassFunc(fc.file, fc.repoClassName, "GetDB")
+	return statement.Params().Id("*").Qual(gormPackage, "DB").BlockFunc(func(g *jen.Group) {
+		g.Return().Id("r").Dot("db")
+	})
 }
 
 func (fc *funcCreator) GenFuncGetBy(field *models.Field) jen.Code {
@@ -165,7 +174,7 @@ func (fc *funcCreator) GenFuncUpdate() *jen.Statement {
 	).BlockFunc(func(g *jen.Group) {
 		g.Id("result").Op(":=").Id("r").Dot("db").
 			Dot("WithContext").Call(jen.Id("ctx")).
-			Dot("Save").Call(jen.Id("&").Id(model))
+			Dot("Updates").Call(jen.Id("&").Id(model))
 
 		g.Add(genReturnErrorIfNotNil())
 
