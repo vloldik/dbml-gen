@@ -5,6 +5,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	ecommerce "output/ecommerce"
+	opt "output/opt"
 )
 
 type OrderItemRepository struct {
@@ -14,23 +15,23 @@ type OrderItemRepository struct {
 func NewOrderItemRepository(db *gorm.DB) *OrderItemRepository {
 	return &OrderItemRepository{db: db}
 }
-func (r *OrderItemRepository) Create(ctx context.Context, model ecommerce.OrderItem) (*ecommerce.OrderItem, error) {
-	result := r.db.WithContext(ctx).Create(&model)
+func (r *OrderItemRepository) Create(ctx context.Context, model ecommerce.OrderItem, opts ...any) (*ecommerce.OrderItem, error) {
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Create(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &model, nil
 }
-func (r *OrderItemRepository) List(ctx context.Context, limit int, offset int) ([]*ecommerce.OrderItem, error) {
+func (r *OrderItemRepository) List(ctx context.Context, limit int, offset int, opts ...any) ([]*ecommerce.OrderItem, error) {
 	var list []*ecommerce.OrderItem
-	result := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&list)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Limit(limit).Offset(offset).Find(&list)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return list, nil
 }
-func (r *OrderItemRepository) Update(ctx context.Context, model ecommerce.OrderItem) (*ecommerce.OrderItem, error) {
-	result := r.db.WithContext(ctx).Updates(&model)
+func (r *OrderItemRepository) Update(ctx context.Context, model ecommerce.OrderItem, opts ...any) (*ecommerce.OrderItem, error) {
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Updates(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}

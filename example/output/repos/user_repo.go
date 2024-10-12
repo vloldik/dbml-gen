@@ -4,6 +4,7 @@ package repos
 import (
 	"context"
 	"gorm.io/gorm"
+	opt "output/opt"
 	public "output/public"
 )
 
@@ -14,39 +15,39 @@ type UserRepository struct {
 func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
-func (r *UserRepository) GetByID(ctx context.Context, id any) (*public.User, error) {
+func (r *UserRepository) GetByID(ctx context.Context, id any, opts ...any) (*public.User, error) {
 	var user public.User
-	result := r.db.WithContext(ctx).First(&user, "id = ?", id)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).First(&user, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &user, nil
 }
-func (r *UserRepository) DeleteByID(ctx context.Context, id any) error {
+func (r *UserRepository) DeleteByID(ctx context.Context, id any, opts ...any) error {
 	var user public.User
-	result := r.db.WithContext(ctx).Delete(&user, "id = ?", id)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Delete(&user, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
-func (r *UserRepository) Create(ctx context.Context, model public.User) (*public.User, error) {
-	result := r.db.WithContext(ctx).Create(&model)
+func (r *UserRepository) Create(ctx context.Context, model public.User, opts ...any) (*public.User, error) {
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Create(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &model, nil
 }
-func (r *UserRepository) List(ctx context.Context, limit int, offset int) ([]*public.User, error) {
+func (r *UserRepository) List(ctx context.Context, limit int, offset int, opts ...any) ([]*public.User, error) {
 	var list []*public.User
-	result := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&list)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Limit(limit).Offset(offset).Find(&list)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return list, nil
 }
-func (r *UserRepository) Update(ctx context.Context, model public.User) (*public.User, error) {
-	result := r.db.WithContext(ctx).Updates(&model)
+func (r *UserRepository) Update(ctx context.Context, model public.User, opts ...any) (*public.User, error) {
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Updates(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}

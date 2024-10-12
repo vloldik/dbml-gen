@@ -5,6 +5,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	ecommerce "output/ecommerce"
+	opt "output/opt"
 )
 
 type MerchantPeriodRepository struct {
@@ -14,39 +15,39 @@ type MerchantPeriodRepository struct {
 func NewMerchantPeriodRepository(db *gorm.DB) *MerchantPeriodRepository {
 	return &MerchantPeriodRepository{db: db}
 }
-func (r *MerchantPeriodRepository) GetByID(ctx context.Context, id any) (*ecommerce.MerchantPeriod, error) {
+func (r *MerchantPeriodRepository) GetByID(ctx context.Context, id any, opts ...any) (*ecommerce.MerchantPeriod, error) {
 	var merchantPeriod ecommerce.MerchantPeriod
-	result := r.db.WithContext(ctx).First(&merchantPeriod, "id = ?", id)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).First(&merchantPeriod, "id = ?", id)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &merchantPeriod, nil
 }
-func (r *MerchantPeriodRepository) DeleteByID(ctx context.Context, id any) error {
+func (r *MerchantPeriodRepository) DeleteByID(ctx context.Context, id any, opts ...any) error {
 	var merchantPeriod ecommerce.MerchantPeriod
-	result := r.db.WithContext(ctx).Delete(&merchantPeriod, "id = ?", id)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Delete(&merchantPeriod, "id = ?", id)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
-func (r *MerchantPeriodRepository) Create(ctx context.Context, model ecommerce.MerchantPeriod) (*ecommerce.MerchantPeriod, error) {
-	result := r.db.WithContext(ctx).Create(&model)
+func (r *MerchantPeriodRepository) Create(ctx context.Context, model ecommerce.MerchantPeriod, opts ...any) (*ecommerce.MerchantPeriod, error) {
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Create(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return &model, nil
 }
-func (r *MerchantPeriodRepository) List(ctx context.Context, limit int, offset int) ([]*ecommerce.MerchantPeriod, error) {
+func (r *MerchantPeriodRepository) List(ctx context.Context, limit int, offset int, opts ...any) ([]*ecommerce.MerchantPeriod, error) {
 	var list []*ecommerce.MerchantPeriod
-	result := r.db.WithContext(ctx).Limit(limit).Offset(offset).Find(&list)
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Limit(limit).Offset(offset).Find(&list)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	return list, nil
 }
-func (r *MerchantPeriodRepository) Update(ctx context.Context, model ecommerce.MerchantPeriod) (*ecommerce.MerchantPeriod, error) {
-	result := r.db.WithContext(ctx).Updates(&model)
+func (r *MerchantPeriodRepository) Update(ctx context.Context, model ecommerce.MerchantPeriod, opts ...any) (*ecommerce.MerchantPeriod, error) {
+	result := opt.ApplyOptions(r.db.WithContext(ctx), opts...).Updates(&model)
 	if result.Error != nil {
 		return nil, result.Error
 	}
