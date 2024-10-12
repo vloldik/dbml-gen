@@ -31,7 +31,7 @@ type templateOptions struct {
 
 func (sg *GORMStructGenerator) createRepositrory(generatedStruct *models.Table) error {
 	if err := SaveTemplate(
-		"./template/apply-option.tpl",
+		"template/apply-option.tpl",
 		strutil.ConcantatePaths(sg.parent.OutputDIR, optionsPackage),
 		"options.go",
 		templateOptions{

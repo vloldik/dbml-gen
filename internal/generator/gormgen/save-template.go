@@ -1,6 +1,7 @@
 package gormgen
 
 import (
+	"embed"
 	"os"
 	"text/template"
 
@@ -8,8 +9,12 @@ import (
 	"github.com/vloldik/dbml-gen/internal/utils/strutil"
 )
 
+//go:embed template/*
+var templatesFS embed.FS
+
 func SaveTemplate(tpl, path, filename string, values any) error {
-	parsedTemplate, err := template.ParseFiles(tpl)
+
+	parsedTemplate, err := template.ParseFS(templatesFS, tpl)
 	if err != nil {
 		return err
 	}
