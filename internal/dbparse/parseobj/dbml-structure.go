@@ -24,6 +24,7 @@ type StructureFullReference struct {
 	Field            *ReferenceField   `"ref" ":" @@`
 	Type             *RelationshipType `@@`
 	ReferenceToField *ReferenceField   `@@`
+	Settings         *Settings         `@@`
 }
 
 type DBMLStructure interface {

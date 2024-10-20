@@ -38,7 +38,7 @@ func (c *ParseObjectToModelConverter) createRelationsFromStructureReference(ref 
 		refToField.NameParts[0],
 		refToField.NameParts[1],
 		refToField.NameParts[2],
-		ref.Type,
+		ref,
 	); err == nil {
 		if err := c.addRelation(relation); err != nil {
 			return err
@@ -52,9 +52,9 @@ func (c *ParseObjectToModelConverter) createRelationsFromStructureReference(ref 
 func (c *ParseObjectToModelConverter) createRelation(
 	fromTableName, fromTableNamespace, fromColumnName string,
 	toTableName, toTableNamespace, toColumnName string,
-	relationshipType *parseobj.RelationshipType) (*models.Relationship, error) {
+	fromObj *parseobj.StructureFullReference) (*models.Relationship, error) {
 
-	createdRelationType, err := models.RelationTypeFromParsed(relationshipType)
+	createdRelationType, err := models.RelationTypeFromParsed(fromObj.Type)
 	fromTableNameModel := models.NewNamespacedNameSafe(fromTableName, fromTableNamespace)
 	toTableNameModel := models.NewNamespacedNameSafe(toTableName, toTableNamespace)
 
@@ -80,15 +80,18 @@ func (c *ParseObjectToModelConverter) createRelation(
 		return nil, err
 	}
 
-	return &models.Relationship{
+	relation := &models.Relationship{
 		RelationType: createdRelationType,
+		OnUpdate:     models.NoAction,
+		OnDelete:     models.NoAction,
 
 		FromTable: fromTable,
 		FromField: fromField,
 
 		ToTable: toTable,
 		ToField: toField,
-	}, nil
+	}
+	return relation, c.applySettings(relation, fromObj.Settings)
 }
 
 func (c *ParseObjectToModelConverter) addRelation(relation *models.Relationship) error {

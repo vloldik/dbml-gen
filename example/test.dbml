@@ -96,7 +96,7 @@ Table ecommerce.merchant_periods {
   end_date datetime
 }
 
-Ref: ecommerce.products.merchant_id > ecommerce.merchants.id // many-to-one
-Ref: ecommerce.product_tags.id <> ecommerce.products.id // many-to-many
+Ref: ecommerce.products.merchant_id > ecommerce.merchants.id [update: cascade] // many-to-one
+Ref: ecommerce.product_tags.id <> ecommerce.products.id [delete: cascade] // many-to-many
 //composite foreign key
 Ref: ecommerce.merchant_periods.merchant_id > ecommerce.merchants.id

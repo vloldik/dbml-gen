@@ -6,7 +6,7 @@ type Setting interface {
 }
 
 type Settings struct {
-	SettingList []Setting `("[" @@* ( "," @@ )* ","? "]")?`
+	SettingList []Setting `("[" @@? ( "," @@ )* ","? "]")?`
 }
 
 type SettingPrimaryKey struct {
@@ -54,9 +54,28 @@ type SettingsIndexType struct {
 	Value string `"type" ":" @Ident`
 }
 
-type HeaderColorSetting struct {
+type SettingHeaderColor struct {
 	*settingImpl
 	Value string `"headercolor" ":" @Color`
+}
+
+type SettingRefOnAction struct {
+	*settingImpl
+	TriggerOn *RefActionTrigger       `@@`
+	Type      *SettingOnRefActionType `@@`
+}
+
+type SettingOnRefActionType struct {
+	IsSetNull    bool `  @ "set" "null"`
+	IsCascade    bool `| @ "cascade"`
+	IsRestrict   bool `| @ "restrict"`
+	IsSetDefault bool `| @ "set" "default"`
+	IsNoAction   bool `| @ "no" "action"`
+}
+
+type RefActionTrigger struct {
+	IsUpdate bool `@ "update" ":"`
+	IsDelete bool `| @ "delete" ":"`
 }
 
 type settingImpl struct{}

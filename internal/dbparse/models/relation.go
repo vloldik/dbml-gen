@@ -8,10 +8,20 @@ import (
 	"github.com/vloldik/dbml-gen/internal/dbparse/parseobj"
 )
 
-type RelationType int8
+type RelationType uint8
+type OnRefChangeAction string
 
 const (
-	OneToOne RelationType = iota
+	Cascade    OnRefChangeAction = "CASCADE"
+	Restrict   OnRefChangeAction = "RESTRICT"
+	SetNull    OnRefChangeAction = "SET NULL"
+	SetDefault OnRefChangeAction = "SET DEFAULT"
+	NoAction   OnRefChangeAction = ""
+)
+
+const (
+	Unknown RelationType = iota
+	OneToOne
 	OneToMany
 	ManyToOne
 	ManyToMany
@@ -45,11 +55,13 @@ func RelationTypeFromParsed(parsed *parseobj.RelationshipType) (RelationType, er
 		return OneToOne, nil
 	}
 
-	return -1, fmt.Errorf("unknown relations type")
+	return Unknown, fmt.Errorf("unknown relations type")
 }
 
 type Relationship struct {
 	RelationType RelationType
+	OnUpdate     OnRefChangeAction
+	OnDelete     OnRefChangeAction
 
 	FromTable *Table
 	FromField *Field

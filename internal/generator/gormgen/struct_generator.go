@@ -96,6 +96,10 @@ func (sg *GORMStructGenerator) createFieldRelation(relation *models.Relationship
 		fmt.Sprintf("foreignKey:%s", foreignKey),
 		fmt.Sprintf("References:%s", references),
 	}
+	if tag := GORMTagForRelationAction(relation); tag != "" {
+		tags = append(tags, tag)
+	}
+
 	// True if we need import
 	needSpecifyPackageName := relation.FromField.Table.PackageName() != relation.ToField.Table.PackageName()
 	// True if we want to use []list
@@ -127,6 +131,21 @@ func (sg *GORMStructGenerator) createFieldRelation(relation *models.Relationship
 		Code: createdField,
 		Name: createdFieldName,
 	})
+}
+
+func GORMTagForRelationAction(relation *models.Relationship) string {
+	result := make([]string, 0)
+	if relation.OnDelete == models.NoAction && relation.OnUpdate == models.NoAction {
+		return ""
+	}
+	if relation.OnDelete != models.NoAction {
+		result = append(result, fmt.Sprintf("OnDelete:%s", relation.OnDelete))
+	}
+	if relation.OnUpdate != models.NoAction {
+		result = append(result, fmt.Sprintf("OnUpdate:%s", relation.OnUpdate))
+	}
+
+	return fmt.Sprintf("constraint:%s", strings.Join(result, ","))
 }
 
 func (sg *GORMStructGenerator) createIndexTags(index *models.Index, _ *models.Field) (tags []string) {

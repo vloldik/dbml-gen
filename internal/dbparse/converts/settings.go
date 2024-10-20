@@ -1,6 +1,7 @@
 package converts
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/vloldik/dbml-gen/internal/dbparse/models"
@@ -9,6 +10,9 @@ import (
 )
 
 func (c *ParseObjectToModelConverter) applySettings(to any, settings *parseobj.Settings) error {
+	if settings == nil || settings.SettingList == nil {
+		return nil
+	}
 	for _, unknown := range settings.SettingList {
 		switch destination := to.(type) {
 		case *models.Field:
@@ -17,6 +21,8 @@ func (c *ParseObjectToModelConverter) applySettings(to any, settings *parseobj.S
 			return c.applyTableSetting(destination, unknown)
 		case *models.Index:
 			return c.applyIndexSettings(destination, unknown)
+		case *models.Relationship:
+			return c.applyRelationsSettings(destination, unknown)
 		default:
 			return fmt.Errorf("unknown type to apply settings for %T", destination)
 		}
@@ -59,7 +65,7 @@ func (c *ParseObjectToModelConverter) applyFieldSetting(field *models.Field, unk
 
 func (c *ParseObjectToModelConverter) applyTableSetting(table *models.Table, unknown parseobj.Setting) error {
 	switch setting := unknown.(type) {
-	case *parseobj.HeaderColorSetting:
+	case *parseobj.SettingHeaderColor:
 		break
 	case *parseobj.SettingNote:
 		table.Note = setting.Value
@@ -89,5 +95,35 @@ func (c *ParseObjectToModelConverter) applyIndexSettings(index *models.Index, un
 		return ErrorUnknownSetting(setting, "models.Index")
 	}
 
+	return nil
+}
+
+func (c *ParseObjectToModelConverter) applyRelationsSettings(relation *models.Relationship, unknown parseobj.Setting) error {
+	switch setting := unknown.(type) {
+	case *parseobj.SettingRefOnAction:
+		var settingType models.OnRefChangeAction
+		if setting.Type.IsCascade {
+			settingType = models.Cascade
+		} else if setting.Type.IsNoAction {
+			settingType = models.NoAction
+		} else if setting.Type.IsRestrict {
+			settingType = models.Restrict
+		} else if setting.Type.IsSetDefault {
+			settingType = models.SetDefault
+		} else if setting.Type.IsSetNull {
+			settingType = models.SetNull
+		} else {
+			return errors.New("unknown setting for relation")
+		}
+		if setting.TriggerOn.IsDelete {
+			relation.OnDelete = settingType
+		} else if setting.TriggerOn.IsUpdate {
+			relation.OnUpdate = settingType
+		} else {
+			return errors.New("unknown setting trigger on")
+		}
+	default:
+		return fmt.Errorf("unknown setting type for relation: %T", setting)
+	}
 	return nil
 }
