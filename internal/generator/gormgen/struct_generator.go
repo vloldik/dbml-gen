@@ -84,9 +84,17 @@ func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Tab
 }
 
 func (sg *GORMStructGenerator) createFieldRelation(relation *models.Relationship) {
+	var foreignKey, references string
+	if relation.RelationType == models.OneToMany {
+		foreignKey = relation.ToField.DisplayName()
+		references = relation.FromField.DisplayName()
+	} else {
+		references = relation.ToField.DisplayName()
+		foreignKey = relation.FromField.DisplayName()
+	}
 	tags := []string{
-		fmt.Sprintf("foreignKey:%s", relation.FromField.DisplayName()),
-		fmt.Sprintf("References:%s", relation.ToField.DisplayName()),
+		fmt.Sprintf("foreignKey:%s", foreignKey),
+		fmt.Sprintf("References:%s", references),
 	}
 	// True if we need import
 	needSpecifyPackageName := relation.FromField.Table.PackageName() != relation.ToField.Table.PackageName()
