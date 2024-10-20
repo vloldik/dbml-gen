@@ -2,8 +2,8 @@
 package ecommerce
 
 type ProductTag struct {
-	ID       int        `gorm:"column:id;primaryKey"`
-	Name     string     `gorm:"column:name"`
+	ID       *int       `gorm:"column:id;primaryKey"`
+	Name     *string    `gorm:"column:name"`
 	Products []*Product `gorm:"foreignKey:ID;References:ID;many2many:product_tag_products"`
 }
 

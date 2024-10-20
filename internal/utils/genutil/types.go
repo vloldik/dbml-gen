@@ -81,8 +81,11 @@ func GetGORMTypeForName(typeName string) (string, bool) {
 	return predefined.SQLName, true
 }
 
-func MapDBTypeToGoType(statement *jen.Statement, dbType string) {
+func MapDBTypeToGoType(statement *jen.Statement, dbType string, isNotNull bool) {
 	predefinedType, exists := dbTypeMap[strings.ToUpper(dbType)]
+	if !isNotNull {
+		statement.Id("*")
+	}
 	if !exists {
 		statement.Any() // Fallback for unknown types
 		return

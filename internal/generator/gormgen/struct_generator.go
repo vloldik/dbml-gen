@@ -46,7 +46,7 @@ func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Tab
 			jenField.Comment(field.NotePrepared()).Line()
 		}
 		jenField.Id(field.DisplayName())
-		genutil.MapDBTypeToGoType(jenField, field.Type)
+		genutil.MapDBTypeToGoType(jenField, field.Type, field.IsNotNull)
 
 		settings, err := field.CreateBasicGORMTags()
 		if err != nil {
