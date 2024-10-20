@@ -85,7 +85,7 @@ func (sg *GORMStructGenerator) createStruct(dbml *models.DBML, table *models.Tab
 
 func (sg *GORMStructGenerator) createFieldRelation(relation *models.Relationship) {
 	var foreignKey, references string
-	if relation.RelationType == models.OneToMany {
+	if relation.RelationType == models.OneToMany || relation.RelationType == models.ManyToOne {
 		foreignKey = relation.ToField.DisplayName()
 		references = relation.FromField.DisplayName()
 	} else {
