@@ -10,7 +10,7 @@ type Product struct {
 	Price      *float64   `gorm:"column:price;type:DECIMAL(5,2)"`
 	Status     *int       `gorm:"column:status;index:product_status"`
 	CreatedAt  *time.Time `gorm:"column:created_at;type:TIMESTAMP;default:CURRENT_TIMESTAMP"`
-	Merchant   *Merchant  `gorm:"foreignKey:MerchantID;References:ID;constraint:OnUpdate:CASCADE"`
+	Merchant   *Merchant  `gorm:"foreignKey:ID;References:MerchantID;constraint:OnUpdate:CASCADE"`
 }
 
 func (Product) TableName() string {

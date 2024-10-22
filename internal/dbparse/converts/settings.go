@@ -16,13 +16,21 @@ func (c *ParseObjectToModelConverter) applySettings(to any, settings *parseobj.S
 	for _, unknown := range settings.SettingList {
 		switch destination := to.(type) {
 		case *models.Field:
-			return c.applyFieldSetting(destination, unknown)
+			if err := c.applyFieldSetting(destination, unknown); err != nil {
+				return err
+			}
 		case *models.Table:
-			return c.applyTableSetting(destination, unknown)
+			if err := c.applyTableSetting(destination, unknown); err != nil {
+				return err
+			}
 		case *models.Index:
-			return c.applyIndexSettings(destination, unknown)
+			if err := c.applyIndexSettings(destination, unknown); err != nil {
+				return err
+			}
 		case *models.Relationship:
-			return c.applyRelationsSettings(destination, unknown)
+			if err := c.applyRelationsSettings(destination, unknown); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unknown type to apply settings for %T", destination)
 		}

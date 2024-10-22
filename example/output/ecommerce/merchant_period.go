@@ -9,7 +9,7 @@ type MerchantPeriod struct {
 	CountryCode *int       `gorm:"column:country_code"`
 	StartDate   *time.Time `gorm:"column:start_date;type:DATETIME"`
 	EndDate     *time.Time `gorm:"column:end_date;type:DATETIME"`
-	Merchant    *Merchant  `gorm:"foreignKey:MerchantID;References:ID"`
+	Merchant    *Merchant  `gorm:"foreignKey:ID;References:MerchantID"`
 }
 
 func (MerchantPeriod) TableName() string {
