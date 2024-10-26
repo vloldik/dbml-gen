@@ -9,6 +9,6 @@
         "program": ".",
         "type": "go",
         "cwd": "${cwd}",
-        "args": ["generate", "--module", "github.com/vloldik/dbml-gen", "-i", "./test/test.dbml", "-o", "./test/output", "--backend", "gorm"]
+        "args": ["generate", "--module", "github.com/vloldik/dbml-gen", "-i", "./example/test.dbml", "-o", "./example/output", "--backend", "gorm"]
     }]
 }

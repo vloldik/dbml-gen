@@ -105,7 +105,7 @@ func (sg *GORMStructGenerator) createFieldRelation(relation *models.Relationship
 	// True if we want to use []list
 	isX_ToMany := relation.RelationType == models.ManyToMany || relation.RelationType == models.OneToMany
 	qual := sg.getStructQualifier(relation.ToTable)
-	createdFieldName := sg.createRelatedFieldName(relation.ToField, relation.ToTable, isX_ToMany)
+	createdFieldName := sg.createRelatedFieldName(relation.FromField, relation.ToTable, isX_ToMany)
 
 	createdField := jen.Id(createdFieldName)
 	if isX_ToMany {
@@ -186,11 +186,14 @@ func (sg *GORMStructGenerator) getStructQualifier(table *models.Table) string {
 	return qual
 }
 
-func (sg *GORMStructGenerator) createRelatedFieldName(field *models.Field, table *models.Table, isX_toMany bool) string {
-	relatedFieldName := field.DisplayName()
+func (sg *GORMStructGenerator) createRelatedFieldName(fromField *models.Field, toTable *models.Table, isX_toMany bool) string {
+	relatedFieldName := fromField.DisplayName()
 	relatedFieldName, found := strings.CutSuffix(relatedFieldName, "Id")
+	if !found {
+		relatedFieldName, found = strings.CutSuffix(relatedFieldName, "ID")
+	}
 	if len(relatedFieldName) < 2 || !found {
-		relatedFieldName = table.DisplayName()
+		relatedFieldName = toTable.DisplayName()
 	}
 	if sg.structFields.hasName(relatedFieldName) {
 		relatedFieldName = "Related" + relatedFieldName
